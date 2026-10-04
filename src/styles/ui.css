@@ -1,0 +1,685 @@
+/* Menus: logo, glass panels, buttons, login, user chip and chapter tiles. */
+
+/* ── Logo ──────────────────────────────────────────────────────────────────── */
+
+.brand {
+  width: min(62vw, 16rem, 42vh);
+  filter: drop-shadow(0 0 22px rgba(77, 184, 255, 0.45)) drop-shadow(0 0 3px rgba(189, 243, 255, 0.55));
+}
+
+.logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.logo-base path {
+  stroke-width: 7;
+  stroke-dasharray: 100;
+}
+
+.screen.is-active .logo-base path {
+  animation: logo-draw 1.5s var(--ease-out) calc(var(--n) * 0.18s) both;
+}
+
+/* A bead of light runs along each letter, like the energy in the player's trail. */
+.logo-pulse path {
+  stroke: #fff;
+  stroke-width: 3.5;
+  stroke-dasharray: 8 200;
+  /* Parked just before the start of the path, far enough for its round cap to stay hidden. */
+  stroke-dashoffset: 12;
+  animation: logo-pulse 6s linear calc(1.6s + var(--n) * 0.3s) infinite;
+}
+
+/* The loop only ticks while its screen is showing. */
+.screen:not(.is-active) .logo-pulse path {
+  animation-play-state: paused;
+}
+
+.logo path {
+  --n: 0;
+}
+
+.logo path:nth-child(2) {
+  --n: 1;
+}
+
+.logo path:nth-child(3) {
+  --n: 2;
+}
+
+@keyframes logo-draw {
+  from {
+    stroke-dashoffset: 100;
+  }
+}
+
+@keyframes logo-pulse {
+  0% {
+    stroke-dashoffset: 12;
+  }
+  30%,
+  100% {
+    stroke-dashoffset: -104;
+  }
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────────── */
+
+.btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.875rem;
+  width: 100%;
+  min-height: 58px;
+  padding: 0 1.75rem;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  background: var(--glass);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 12px 32px rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  transition:
+    transform 0.5s var(--ease-spring),
+    border-color 0.3s,
+    box-shadow 0.3s,
+    filter 0.3s;
+}
+
+/* Sheen: a band of light that sweeps across on hover, focus and press. */
+.btn::after,
+.action-icon::after,
+.tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 32%, rgba(255, 255, 255, 0.5) 50%, transparent 68%);
+  transform: translateX(-130%);
+}
+
+.btn:focus-visible::after,
+.btn:active::after,
+.action:focus-visible .action-icon::after,
+.action:active .action-icon::after,
+.tile:focus-visible::after,
+.tile:active::after {
+  animation: sheen 0.9s var(--ease-out);
+}
+
+@media (hover: hover) {
+  .btn:hover::after,
+  .action:hover .action-icon::after,
+  .tile:hover::after {
+    animation: sheen 0.9s var(--ease-out);
+  }
+
+  .btn:not(.btn-primary):hover {
+    filter: brightness(1.18);
+  }
+
+  .btn:hover {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      0 12px 40px rgba(30, 110, 220, 0.3);
+  }
+
+  .btn-primary:hover {
+    filter: brightness(1.06) saturate(1.05);
+  }
+}
+
+@keyframes sheen {
+  to {
+    transform: translateX(130%);
+  }
+}
+
+.btn:active,
+.action:active,
+.icon-btn:active,
+.tile:active {
+  transform: scale(0.96);
+  transition-duration: 0.09s;
+}
+
+.btn-label {
+  /* Trailing letter-spacing would push the label off-centre. */
+  margin-right: -0.3em;
+}
+
+.btn:not(.btn-primary) .btn-label {
+  background: var(--ice-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@media (forced-colors: active) {
+  .btn:not(.btn-primary) .btn-label {
+    background: none;
+    color: ButtonText;
+  }
+}
+
+.btn-primary {
+  border-color: rgba(255, 255, 255, 0.6);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 46%),
+    var(--ice-gradient);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -12px 22px rgba(24, 84, 214, 0.35),
+    0 10px 44px rgba(77, 184, 255, 0.38),
+    0 0 0 1px rgba(127, 220, 255, 0.14);
+  color: #03142b;
+  font-weight: 600;
+}
+
+.btn-primary:focus-visible {
+  outline-color: #fff;
+}
+
+.btn-meta {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(3, 20, 43, 0.16);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+}
+
+.btn .spinner {
+  display: none;
+  border-color: rgba(3, 20, 43, 0.2);
+  border-top-color: #03142b;
+}
+
+.btn[aria-busy='true'] {
+  pointer-events: none;
+}
+
+.btn[aria-busy='true'] .btn-label {
+  display: none;
+}
+
+.btn[aria-busy='true'] .spinner {
+  display: block;
+}
+
+.icon-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--ice-0);
+  transition:
+    transform 0.5s var(--ease-spring),
+    border-color 0.3s,
+    box-shadow 0.3s,
+    color 0.3s;
+}
+
+.icon-btn-small {
+  width: 32px;
+  height: 32px;
+  border-color: transparent;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.icon-btn-small .icon {
+  width: 18px;
+  height: 18px;
+}
+
+@media (hover: hover) {
+  .icon-btn:hover {
+    border-color: var(--line-bright);
+    box-shadow: 0 0 24px rgba(77, 184, 255, 0.35);
+    color: #fff;
+  }
+}
+
+/* ── Login ─────────────────────────────────────────────────────────────────── */
+
+.panel {
+  position: relative;
+  width: 100%;
+  padding: 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 26px;
+  background: var(--glass);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 30px 80px rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+}
+
+.login {
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+}
+
+.login .btn {
+  margin-top: 0.375rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field .micro {
+  margin-left: 0.25rem;
+}
+
+.field input {
+  width: 100%;
+  height: 52px;
+  padding: 0 1rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(3, 9, 20, 0.6);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.35);
+  /* 16px keeps iOS from zooming the page when a field takes focus. */
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  caret-color: var(--ice-1);
+  user-select: text;
+  -webkit-user-select: text;
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--ice-1);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.35),
+    0 0 0 4px rgba(127, 220, 255, 0.12),
+    0 0 28px rgba(77, 184, 255, 0.2);
+}
+
+.field input[aria-invalid='true'] {
+  border-color: var(--danger);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.35),
+    0 0 0 4px rgba(255, 107, 134, 0.14),
+    0 0 28px rgba(255, 107, 134, 0.3);
+}
+
+.field input:-webkit-autofill {
+  -webkit-text-fill-color: var(--text);
+  box-shadow: inset 0 0 0 100px #07101f;
+  transition: background-color 99999s;
+}
+
+/* The hint and the error share one line, so an error never moves the layout. */
+.login-foot {
+  display: grid;
+  justify-items: center;
+  margin-top: calc(clamp(1.5rem, 5vh, 3rem) * -0.5);
+}
+
+.login-foot > * {
+  grid-area: 1 / 1;
+  transition: opacity 0.3s var(--ease-out);
+}
+
+.login-error {
+  color: var(--danger);
+  text-shadow: 0 0 18px rgba(255, 107, 134, 0.6);
+}
+
+.login-error:empty,
+.login-error:not(:empty) + .login-hint {
+  opacity: 0;
+}
+
+/* ── Menu ──────────────────────────────────────────────────────────────────── */
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  width: 100%;
+}
+
+.menu > :first-child {
+  margin-bottom: 0.5rem;
+}
+
+.user-chip {
+  position: absolute;
+  top: calc(var(--safe-top) + 1rem);
+  right: calc(var(--safe-right) + 1rem);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.375rem 0.25rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.screen.is-active .user-chip {
+  animation: rise 0.75s var(--ease-out) 0.4s both;
+}
+
+.user-name {
+  max-width: 11rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--ice-0);
+}
+
+/* ── Chapters ──────────────────────────────────────────────────────────────── */
+
+.chapter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  width: 100%;
+  max-width: var(--content-width);
+}
+
+.tile {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  aspect-ratio: 4 / 5;
+  max-height: min(320px, 60vh);
+  width: 100%;
+  padding: 1.375rem;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: var(--glass);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 20px 50px rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  text-align: left;
+  transition:
+    transform 0.5s var(--ease-spring),
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+
+.tile-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.tile-foes {
+  display: flex;
+  gap: 0.375rem;
+  padding-top: 0.375rem;
+}
+
+.foe {
+  display: block;
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 0 6px rgba(255, 140, 120, 0.55));
+}
+
+.tile-number {
+  font-size: clamp(3.75rem, 9vw, 6rem);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  background: var(--ice-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 16px rgba(77, 184, 255, 0.35));
+}
+
+.tile-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 32px;
+  color: var(--ice-0);
+}
+
+.tile-status {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+
+.tile-status .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.tile-best {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.tile[data-state='locked'] {
+  border-color: rgba(165, 228, 255, 0.1);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.tile[data-state='locked'] .tile-number {
+  background: none;
+  color: rgba(190, 228, 255, 0.16);
+  filter: none;
+}
+
+.tile[data-state='locked'] .tile-foot {
+  color: rgba(190, 228, 255, 0.4);
+}
+
+.tile[data-state='locked'] .foe {
+  opacity: 0.35;
+  filter: grayscale(0.6);
+}
+
+.tile[data-state='open'] {
+  border-color: var(--line-bright);
+  animation: tile-breathe 3.2s ease-in-out infinite;
+}
+
+.tile[data-state='open'] .tile-status {
+  border-color: transparent;
+  background: var(--ice-gradient);
+  color: #03142b;
+}
+
+.tile[data-state='cleared'] {
+  border-color: rgba(200, 243, 255, 0.4);
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(127, 220, 255, 0.18), transparent 60%),
+    var(--glass);
+}
+
+.tile[data-state='cleared'] .tile-status {
+  border-color: var(--line-bright);
+  box-shadow: 0 0 18px rgba(127, 220, 255, 0.45);
+}
+
+@media (hover: hover) {
+  .tile:not([data-state='locked']):hover {
+    transform: translateY(-4px);
+    border-color: var(--line-bright);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      0 24px 60px rgba(30, 110, 220, 0.35);
+  }
+}
+
+@keyframes tile-breathe {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 20px 50px rgba(0, 0, 0, 0.4),
+      0 0 0 rgba(77, 184, 255, 0);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      0 20px 50px rgba(0, 0, 0, 0.4),
+      0 0 44px rgba(77, 184, 255, 0.38);
+  }
+}
+
+/* Narrow portrait screens stack the tiles; a short landscape phone keeps the row, which fits its height. */
+@media (max-width: 640px) and (orientation: portrait) {
+  .chapter-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.875rem;
+  }
+
+  .tile {
+    flex-direction: row;
+    align-items: center;
+    aspect-ratio: auto;
+    min-height: 116px;
+    padding: 1rem 1.375rem;
+  }
+
+  .tile-head {
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1.25rem;
+  }
+
+  .tile-foes {
+    padding-top: 0;
+  }
+
+  .tile-number {
+    font-size: 3.75rem;
+  }
+
+  .tile-foot {
+    flex-direction: row-reverse;
+    width: auto;
+  }
+}
+
+@media (max-height: 480px) {
+  .screen {
+    padding-block: calc(var(--safe-top) + 0.75rem) calc(var(--safe-bottom) + 0.75rem);
+  }
+
+  .screen-head {
+    margin-bottom: 0.5rem;
+  }
+
+  .stack {
+    gap: 1rem;
+  }
+
+  /* Short landscape phones: logo beside the form, so signing in never needs a scroll. The hint / error line sits
+     under the form it belongs to. */
+  [data-screen='login'] .stack {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 22.5rem);
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem 2.5rem;
+    max-width: 44rem;
+  }
+
+  [data-screen='login'] .brand {
+    grid-row: span 2;
+    width: 11rem;
+  }
+
+  .panel {
+    padding: 1rem 1.25rem;
+  }
+
+  .login {
+    gap: 0.625rem;
+  }
+
+  .field input {
+    height: 44px;
+  }
+
+  .login-foot {
+    margin-top: 0;
+  }
+
+  .btn {
+    min-height: 48px;
+  }
+
+  .menu > :first-child {
+    margin-bottom: 0;
+  }
+}
+
+/* Phones: re-blurring the animated backdrop under every glass surface each frame costs more than it shows. */
+@media (hover: none) and (pointer: coarse) {
+  .btn,
+  .icon-btn,
+  .panel,
+  .user-chip,
+  .tile {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}

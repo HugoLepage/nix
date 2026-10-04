@@ -1,0 +1,383 @@
+/* Tokens, reset, app shell, screen cross-fades and the primitives every screen shares. */
+
+:root {
+  --bg: #04060c;
+  --bg-glow: #0b1428;
+  --ice-0: #bdf3ff;
+  --ice-1: #7fdcff;
+  --ice-2: #4db8ff;
+  --ice-3: #3b82f6;
+  --ice-gradient: linear-gradient(135deg, var(--ice-0) 0%, var(--ice-1) 34%, var(--ice-2) 68%, var(--ice-3) 100%);
+  --text: #e9f9ff;
+  --text-dim: rgba(190, 228, 255, 0.56);
+  --line: rgba(165, 228, 255, 0.2);
+  --line-bright: rgba(200, 243, 255, 0.55);
+  --glass: linear-gradient(180deg, rgba(160, 220, 255, 0.1), rgba(90, 150, 255, 0.035));
+  --rim: linear-gradient(135deg, rgba(189, 243, 255, 0.62), rgba(77, 184, 255, 0.14) 42%, rgba(59, 130, 246, 0.52));
+  --danger: #ff6b86;
+  --amber: #ffb347;
+  --magenta: #ff4fd8;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  color-scheme: dark;
+}
+
+/* Phones skip the backdrop blur (ui.css), so their glass is denser: the ambient ribbon must not show through sharp. */
+@media (hover: none) and (pointer: coarse) {
+  :root {
+    --glass: linear-gradient(180deg, rgba(24, 40, 70, 0.8), rgba(9, 16, 32, 0.84));
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--bg);
+}
+
+body {
+  /* Fixed so iOS cannot rubber-band the whole app. */
+  position: fixed;
+  inset: 0;
+  color: var(--text);
+  font: 300 1rem/1.4 system-ui, -apple-system, 'Segoe UI Variable Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  letter-spacing: 0.04em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+h1,
+h2,
+p,
+figure {
+  margin: 0;
+  font-weight: inherit;
+}
+
+button,
+input {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+::selection {
+  background: rgba(127, 220, 255, 0.32);
+  color: #fff;
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ice-0);
+  outline-offset: 3px;
+}
+
+.noscript {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--text-dim);
+}
+
+/* ── App shell ─────────────────────────────────────────────────────────────── */
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(120% 70% at 50% -12%, rgba(28, 58, 120, 0.55) 0%, transparent 62%),
+    radial-gradient(70% 55% at 88% 112%, rgba(59, 130, 246, 0.16) 0%, transparent 65%),
+    radial-gradient(60% 50% at 6% 100%, rgba(77, 184, 255, 0.08) 0%, transparent 60%),
+    var(--bg);
+}
+
+/* Soft vignette so panels float in light rather than on a flat field. */
+#app::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.5) 100%);
+  transition: opacity 0.5s var(--ease-out);
+}
+
+#app[data-screen='game']::after {
+  opacity: 0;
+}
+
+/* Film grain: dithers the very dark gradients, which would otherwise band on 8-bit displays. */
+#app::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+#app[data-screen='game']::before {
+  display: none;
+}
+
+.svg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition: opacity 0.6s var(--ease-out);
+}
+
+#app[data-screen='game'] .backdrop {
+  opacity: 0;
+}
+
+/* ── Screens ───────────────────────────────────────────────────────────────── */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: calc(var(--safe-top) + 1.5rem) calc(var(--safe-right) + 1.25rem) calc(var(--safe-bottom) + 1.5rem)
+    calc(var(--safe-left) + 1.25rem);
+  overflow: hidden auto;
+  scrollbar-width: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.985);
+  transition:
+    opacity 0.38s var(--ease-out),
+    transform 0.5s var(--ease-out),
+    visibility 0s linear 0.38s;
+}
+
+.screen::-webkit-scrollbar {
+  display: none;
+}
+
+.screen.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+}
+
+/* The header lines up with whatever grid sits under it. */
+[data-screen='chapters'] {
+  --content-width: 760px;
+}
+
+[data-screen='howto'] {
+  --content-width: min(880px, 128vh);
+}
+
+/* Auto margins centre the content in the free space yet, unlike justify-content, never push an overflowing top
+   edge out of scrolling reach (short landscape phones, on-screen keyboards). */
+.screen > .spinner,
+.stack,
+.chapter-grid,
+.howto-grid {
+  margin-block: auto;
+}
+
+.screen-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 100%;
+  max-width: var(--content-width);
+  min-height: 48px;
+  margin-bottom: 1rem;
+}
+
+.screen-head .icon-btn {
+  position: absolute;
+  left: 0;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.5rem, 5vh, 3rem);
+  width: 100%;
+  max-width: 22.5rem;
+}
+
+/* Staggered entrance, replayed every time a screen becomes active. */
+.screen.is-active .brand,
+.screen.is-active .stagger > * {
+  animation: rise 0.75s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 80ms + 60ms);
+}
+
+.stagger > :nth-child(2) {
+  --i: 1;
+}
+
+.stagger > :nth-child(3) {
+  --i: 2;
+}
+
+.stagger > :nth-child(4) {
+  --i: 3;
+}
+
+.stagger > :nth-child(5) {
+  --i: 4;
+}
+
+.stagger > :nth-child(6) {
+  --i: 5;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+}
+
+/* ── Primitives ────────────────────────────────────────────────────────────── */
+
+.micro {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.32em;
+  /* Letter-spacing trails the last glyph; pull it back so labels centre optically. */
+  margin-right: -0.32em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon-solid {
+  fill: currentColor;
+}
+
+/* Luminous light-blue rim on glass surfaces: a gradient ring masked out of a pseudo-element laid over the element's
+   transparent 1px border, so translucent glass stays see-through inside. */
+.btn:not(.btn-primary)::before,
+.panel::before,
+.card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 2;
+  padding: 1px;
+  border-radius: inherit;
+  background: var(--rim);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.spinner {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(190, 243, 255, 0.18);
+  border-top-color: var(--ice-0);
+  animation: spin 0.8s linear infinite;
+}
+
+.spinner-large {
+  width: 34px;
+  height: 34px;
+  filter: drop-shadow(0 0 10px rgba(127, 220, 255, 0.5));
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Reduced motion: keep fades, drop travel, loops and sweeps ─────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  .screen {
+    transform: none;
+  }
+
+  .spinner {
+    animation-duration: 1.6s !important;
+    animation-iteration-count: infinite !important;
+  }
+}

@@ -1,0 +1,771 @@
+/* How to play: six looping mini-diagrams. Each element's resting style is a readable still frame, which is what
+   shows when motion is reduced (the global reduced-motion rule ends every animation immediately). */
+
+.howto-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  gap: 1rem;
+  width: 100%;
+  max-width: var(--content-width);
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 0.75rem 0.875rem;
+  border: 1px solid transparent;
+  border-radius: 22px;
+  background: var(--glass);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 20px 50px rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.card-wide {
+  grid-column: span 2;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .card {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* Loops only tick while their screen is showing. */
+.screen:not(.is-active) .diagram * {
+  animation-play-state: paused;
+}
+
+@media (max-width: 640px) and (orientation: portrait) {
+  .howto-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  /* Four rows of cards share the height left after the header, so short phones never scroll: each drawing gets a
+     quarter of it minus its card's padding and caption, and shrinks inside its card when that is less. */
+  .diagram {
+    max-height: calc((100dvh - var(--safe-top) - var(--safe-bottom) - 9.5rem) / 4 - 3.25rem);
+  }
+}
+
+/* ── Shared parts ──────────────────────────────────────────────────────────── */
+
+.d-field {
+  fill: rgba(3, 9, 20, 0.7);
+}
+
+.d-rail {
+  fill: none;
+  stroke: #e6fbff;
+  stroke-width: 1.4;
+  filter: drop-shadow(0 0 3px rgba(127, 220, 255, 0.9));
+}
+
+.d-trail {
+  fill: none;
+  stroke: #9ff0ff;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  filter: drop-shadow(0 0 4px rgba(127, 220, 255, 0.9));
+}
+
+.d-arrow {
+  filter: drop-shadow(0 0 4px rgba(189, 243, 255, 0.9));
+}
+
+.d-hit {
+  fill: none;
+  stroke: var(--danger);
+  stroke-width: 2;
+  opacity: 0;
+}
+
+/* ── Move ──────────────────────────────────────────────────────────────────── */
+
+.d-key rect {
+  fill: rgba(16, 36, 72, 0.6);
+  stroke: rgba(165, 228, 255, 0.4);
+  stroke-width: 1.2;
+  animation: d-key 4s linear var(--key-delay, 0s) infinite;
+}
+
+.d-key text {
+  fill: var(--ice-0);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-anchor: middle;
+  animation: d-key-letter 4s linear var(--key-delay, 0s) infinite;
+}
+
+.d-key path {
+  fill: none;
+  stroke: var(--ice-0);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: d-key-chevron 4s linear var(--key-delay, 0s) infinite;
+}
+
+/* Up, right, down, left light up in turn. */
+.d-key-right {
+  --key-delay: 1s;
+}
+
+.d-key-down {
+  --key-delay: 2s;
+}
+
+.d-key-left {
+  --key-delay: 3s;
+}
+
+@keyframes d-key {
+  0%,
+  17% {
+    fill: #9ee7ff;
+    stroke: #fff;
+    filter: drop-shadow(0 0 5px rgba(127, 220, 255, 0.95));
+  }
+  25%,
+  100% {
+    fill: rgba(16, 36, 72, 0.6);
+    stroke: rgba(165, 228, 255, 0.4);
+    filter: drop-shadow(0 0 0 rgba(127, 220, 255, 0));
+  }
+}
+
+@keyframes d-key-letter {
+  0%,
+  17% {
+    fill: #03142b;
+  }
+  25%,
+  100% {
+    fill: var(--ice-0);
+  }
+}
+
+@keyframes d-key-chevron {
+  0%,
+  17% {
+    stroke: #03142b;
+  }
+  25%,
+  100% {
+    stroke: var(--ice-0);
+  }
+}
+
+.d-swipe {
+  transform: translate(226px, 55px);
+}
+
+/* Touch screens: no keyboard to show, so the swipe takes the whole card. */
+@media (hover: none) and (pointer: coarse) {
+  .d-keys {
+    display: none;
+  }
+
+  .d-swipe {
+    transform: translate(104px, 55px) scale(1.6);
+  }
+}
+
+.d-swipe-track {
+  fill: none;
+  stroke: rgba(165, 228, 255, 0.3);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 6;
+}
+
+.d-swipe-tail {
+  fill: none;
+  stroke: var(--ice-1);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  opacity: 0.55;
+  animation: d-swipe-tail 2s var(--ease-out) infinite;
+}
+
+.d-swipe-dot {
+  fill: #eafcff;
+  filter: drop-shadow(0 0 6px rgba(127, 220, 255, 0.95));
+  transform: translateX(64px);
+  animation: d-swipe-dot 2s var(--ease-out) infinite;
+}
+
+@keyframes d-swipe-dot {
+  0% {
+    opacity: 0;
+    transform: translateX(0) scale(1.5);
+  }
+  14% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(64px) scale(1);
+  }
+  80%,
+  100% {
+    opacity: 0;
+    transform: translateX(64px) scale(1.4);
+  }
+}
+
+@keyframes d-swipe-tail {
+  0%,
+  14% {
+    opacity: 0.55;
+    stroke-dashoffset: 100;
+  }
+  60% {
+    opacity: 0.55;
+    stroke-dashoffset: 0;
+  }
+  80%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ── Claim ─────────────────────────────────────────────────────────────────── */
+
+.d-fill {
+  opacity: 0.92;
+  animation: d-claim-fill 6s linear infinite;
+}
+
+.d-claim .d-trail {
+  animation: d-claim-trail 6s linear infinite;
+}
+
+.d-claim .d-arrow {
+  transform: translate(105px, 10px);
+  animation: d-claim-arrow 6s linear infinite;
+}
+
+@keyframes d-claim-arrow {
+  0% {
+    opacity: 0;
+    transform: translate(50px, 10px) rotate(180deg);
+  }
+  5%,
+  8% {
+    opacity: 1;
+    transform: translate(50px, 10px) rotate(180deg);
+  }
+  24% {
+    transform: translate(50px, 65px) rotate(180deg);
+  }
+  27% {
+    transform: translate(50px, 65px) rotate(90deg);
+  }
+  43% {
+    transform: translate(105px, 65px) rotate(90deg);
+  }
+  46% {
+    transform: translate(105px, 65px) rotate(0deg);
+  }
+  62%,
+  92% {
+    opacity: 1;
+    transform: translate(105px, 10px) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(105px, 10px) rotate(0deg);
+  }
+}
+
+@keyframes d-claim-trail {
+  0%,
+  8% {
+    opacity: 1;
+    stroke-dashoffset: 100;
+  }
+  24%,
+  27% {
+    stroke-dashoffset: 66.67;
+  }
+  43%,
+  46% {
+    stroke-dashoffset: 33.33;
+  }
+  62% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  72%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes d-claim-fill {
+  0%,
+  62% {
+    opacity: 0;
+    transform: scale(0.55);
+    animation-timing-function: var(--ease-spring);
+  }
+  72%,
+  92% {
+    opacity: 0.92;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+/* ── Sparx ─────────────────────────────────────────────────────────────────── */
+
+.d-spark {
+  fill: #fff3c4;
+  transform: translate(36px, 10px);
+  filter: drop-shadow(0 0 5px var(--amber)) drop-shadow(0 0 2px #ff9f1c);
+  animation: d-spark 5s linear infinite;
+}
+
+.d-spark-rays {
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  animation: d-flicker 0.28s steps(2, jump-none) infinite;
+}
+
+.d-sparx .d-arrow {
+  transform: translate(75px, 10px) rotate(90deg);
+  animation: d-sparx-arrow 5s linear infinite;
+}
+
+.d-sparx .d-hit {
+  animation: d-sparx-hit 5s var(--ease-out) infinite;
+}
+
+@keyframes d-spark {
+  0% {
+    transform: translate(140px, 100px);
+  }
+  27% {
+    transform: translate(10px, 100px);
+  }
+  46% {
+    transform: translate(10px, 10px);
+  }
+  60% {
+    transform: translate(75px, 10px);
+  }
+  74% {
+    transform: translate(140px, 10px);
+  }
+  93%,
+  100% {
+    transform: translate(140px, 100px);
+  }
+}
+
+@keyframes d-flicker {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  to {
+    transform: rotate(22deg) scale(0.7);
+  }
+}
+
+@keyframes d-sparx-arrow {
+  0%,
+  59% {
+    opacity: 1;
+    transform: translate(75px, 10px) rotate(90deg) scale(1);
+  }
+  62% {
+    opacity: 1;
+    transform: translate(75px, 10px) rotate(90deg) scale(1.6);
+  }
+  67%,
+  86% {
+    opacity: 0;
+    transform: translate(75px, 10px) rotate(90deg) scale(0);
+    animation-timing-function: var(--ease-spring);
+  }
+  97%,
+  100% {
+    opacity: 1;
+    transform: translate(75px, 10px) rotate(90deg) scale(1);
+  }
+}
+
+@keyframes d-sparx-hit {
+  0%,
+  59% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  61% {
+    opacity: 1;
+  }
+  76%,
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+/* ── Qix ───────────────────────────────────────────────────────────────────── */
+
+.d-ribbon {
+  fill: none;
+  stroke: var(--magenta);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  transform: translate(92px, 50px) rotate(-40deg);
+  filter: drop-shadow(0 0 5px rgba(255, 79, 216, 0.9));
+  animation: d-ribbon 6s ease-in-out infinite;
+}
+
+.d-ribbon path:nth-child(2) {
+  stroke: #e052e6;
+  opacity: 0.8;
+}
+
+.d-ribbon path:nth-child(3) {
+  stroke: #c455f0;
+  opacity: 0.6;
+}
+
+.d-ribbon path:nth-child(4) {
+  stroke: #a855f7;
+  opacity: 0.4;
+}
+
+.d-qix .d-trail {
+  animation: d-qix-trail 6s linear infinite;
+}
+
+.d-qix .d-arrow {
+  transform: translate(56px, 72px) rotate(180deg);
+  animation: d-qix-arrow 6s linear infinite;
+}
+
+.d-qix .d-hit {
+  animation: d-qix-hit 6s var(--ease-out) infinite;
+}
+
+@keyframes d-ribbon {
+  0% {
+    transform: translate(122px, 72px) rotate(0deg);
+  }
+  40% {
+    transform: translate(98px, 38px) rotate(-130deg);
+  }
+  52% {
+    transform: translate(72px, 52px) rotate(-170deg);
+  }
+  72% {
+    transform: translate(90px, 70px) rotate(-240deg);
+  }
+  100% {
+    transform: translate(122px, 72px) rotate(-360deg);
+  }
+}
+
+@keyframes d-qix-arrow {
+  0% {
+    opacity: 1;
+    transform: translate(56px, 10px) rotate(180deg) scale(1);
+  }
+  40%,
+  52% {
+    opacity: 1;
+    transform: translate(56px, 72px) rotate(180deg) scale(1);
+  }
+  55% {
+    opacity: 1;
+    transform: translate(56px, 72px) rotate(180deg) scale(1.6);
+  }
+  60%,
+  88% {
+    opacity: 0;
+    transform: translate(56px, 72px) rotate(180deg) scale(0);
+  }
+  88.1% {
+    opacity: 0;
+    transform: translate(56px, 10px) rotate(180deg) scale(0);
+    animation-timing-function: var(--ease-spring);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(56px, 10px) rotate(180deg) scale(1);
+  }
+}
+
+@keyframes d-qix-trail {
+  0% {
+    opacity: 1;
+    stroke: #9ff0ff;
+    stroke-dashoffset: 100;
+  }
+  40%,
+  51% {
+    opacity: 1;
+    stroke: #9ff0ff;
+    stroke-dashoffset: 0;
+  }
+  54% {
+    opacity: 1;
+    stroke: var(--danger);
+    stroke-dashoffset: 0;
+  }
+  64%,
+  100% {
+    opacity: 0;
+    stroke: var(--danger);
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes d-qix-hit {
+  0%,
+  51% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  53% {
+    opacity: 1;
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+/* ── Goal ──────────────────────────────────────────────────────────────────── */
+
+.d-goal-text {
+  fill: var(--ice-0);
+  font-size: 22px;
+  font-weight: 200;
+  letter-spacing: 0.04em;
+  text-anchor: end;
+  animation: d-goal-text 6s linear infinite;
+}
+
+.d-goal-track {
+  fill: rgba(140, 200, 255, 0.1);
+  stroke: rgba(165, 228, 255, 0.2);
+  stroke-width: 1;
+}
+
+.d-goal-fill {
+  animation: d-goal-fill 6s var(--ease-out) infinite;
+}
+
+.d-goal-marker {
+  fill: #fff;
+  stroke: var(--ice-1);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px rgba(189, 243, 255, 0.9));
+  animation: d-goal-marker 6s linear infinite;
+}
+
+.d-goal-ring {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.5;
+  opacity: 0;
+  animation: d-goal-ring 6s var(--ease-out) infinite;
+}
+
+@keyframes d-goal-fill {
+  0% {
+    opacity: 1;
+    transform: scaleX(0);
+  }
+  12%,
+  20% {
+    transform: scaleX(0.24);
+  }
+  32%,
+  40% {
+    transform: scaleX(0.52);
+  }
+  52%,
+  60% {
+    transform: scaleX(0.8);
+  }
+  72%,
+  92% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes d-goal-marker {
+  0%,
+  71% {
+    fill: var(--bg);
+  }
+  73%,
+  92% {
+    fill: #fff;
+  }
+  100% {
+    fill: var(--bg);
+  }
+}
+
+@keyframes d-goal-ring {
+  0%,
+  71% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  73% {
+    opacity: 1;
+  }
+  90%,
+  100% {
+    opacity: 0;
+    transform: scale(3);
+  }
+}
+
+@keyframes d-goal-text {
+  0%,
+  71% {
+    fill: var(--text-dim);
+  }
+  74%,
+  92% {
+    fill: #fff;
+  }
+  100% {
+    fill: var(--text-dim);
+  }
+}
+
+/* ── Lives ─────────────────────────────────────────────────────────────────── */
+
+.d-ghosts {
+  fill: none;
+  stroke: rgba(165, 228, 255, 0.28);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+.d-life {
+  filter: drop-shadow(0 0 5px rgba(127, 220, 255, 0.8));
+  animation: d-life 6s linear infinite;
+}
+
+.d-life-3 {
+  opacity: 0;
+  animation-name: d-life-3;
+}
+
+.d-life-2 {
+  animation-name: d-life-2;
+}
+
+@keyframes d-life-3 {
+  0%,
+  18% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  22% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+  28%,
+  88% {
+    opacity: 0;
+    transform: scale(0);
+    animation-timing-function: var(--ease-spring);
+  }
+  97%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes d-life-2 {
+  0%,
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  44% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+  50%,
+  88% {
+    opacity: 0;
+    transform: scale(0);
+    animation-timing-function: var(--ease-spring);
+  }
+  97%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes d-life {
+  0%,
+  62% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  66% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+  72%,
+  88% {
+    opacity: 0;
+    transform: scale(0);
+    animation-timing-function: var(--ease-spring);
+  }
+  97%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

@@ -1,0 +1,109 @@
+<section class="screen game" data-screen="game" aria-label="Game" inert>
+  <canvas id="game-canvas" class="game-canvas"></canvas>
+
+  <header class="hud hud-top">
+    <div id="hud-lives" class="lives" role="img" aria-label="Lives"></div>
+    <p class="hud-level">
+      <span class="micro">Level</span>
+      <span id="hud-level" class="hud-level-value">01</span>
+    </p>
+    <button id="hud-pause" class="icon-btn" type="button" aria-label="Pause">
+      <svg class="icon" aria-hidden="true"><use href="#i-pause" /></svg>
+    </button>
+  </header>
+
+  <footer class="hud hud-bottom">
+    <output id="progress-value" class="progress-value" aria-label="Captured" aria-live="off">0%</output>
+    <div id="progress" class="progress" role="progressbar" aria-label="Progress to goal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="progress-track">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+      <span class="progress-goal" aria-hidden="true"></span>
+    </div>
+  </footer>
+
+  <div class="overlay overlay-intro" data-overlay="intro" inert>
+    <p class="micro">Level</p>
+    <p id="intro-level" class="intro-number">01</p>
+    <div class="intro-glyph" role="img" aria-label="Press any key or tap to start">
+      <svg class="glyph glyph-key" viewBox="0 0 48 48" aria-hidden="true">
+        <rect class="glyph-key-base" x="8" y="15" width="32" height="26" rx="7" />
+        <rect class="glyph-key-cap" x="8" y="9" width="32" height="26" rx="7" />
+      </svg>
+      <svg class="glyph glyph-tap" viewBox="0 0 48 48" aria-hidden="true">
+        <circle class="glyph-tap-ring" cx="24" cy="24" r="10" />
+        <circle class="glyph-tap-dot" cx="24" cy="24" r="5" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="overlay" data-overlay="pause" role="dialog" aria-modal="true" aria-label="Paused" inert>
+    <div class="overlay-card">
+      <p class="micro">Paused</p>
+      <div class="overlay-actions">
+        <button class="action action-primary" type="button" data-action="resume" data-autofocus>
+          <span class="action-icon"><svg class="icon icon-solid" aria-hidden="true"><use href="#i-play" /></svg></span>
+          <span class="micro">Resume</span>
+        </button>
+        <button class="action" type="button" data-action="restart">
+          <span class="action-icon"><svg class="icon" aria-hidden="true"><use href="#i-restart" /></svg></span>
+          <span class="micro">Restart</span>
+        </button>
+        <button class="action" type="button" data-action="menu">
+          <span class="action-icon"><svg class="icon" aria-hidden="true"><use href="#i-menu" /></svg></span>
+          <span class="micro">Menu</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay overlay-win" data-overlay="win" role="dialog" aria-modal="true" aria-label="Level cleared" inert>
+    <div class="overlay-card">
+      <div class="badge badge-win" aria-hidden="true">
+        <svg class="icon"><use href="#i-check" /></svg>
+      </div>
+      <p class="result">
+        <span id="win-time" class="result-time">0:00.0</span>
+        <span id="win-best" class="chip" hidden>Best</span>
+      </p>
+      <p class="micro"><span id="win-percent">75</span>% claimed</p>
+      <div class="overlay-actions">
+        <button class="action action-primary" type="button" data-action="next" data-autofocus>
+          <span class="action-icon"><svg class="icon" aria-hidden="true"><use href="#i-next" /></svg></span>
+          <span class="micro">Next</span>
+        </button>
+        <button class="action action-primary" type="button" data-action="chapters" data-autofocus hidden>
+          <span class="action-icon"><svg class="icon" aria-hidden="true"><use href="#i-chapters" /></svg></span>
+          <span class="micro">Chapters</span>
+        </button>
+        <button class="action" type="button" data-action="restart">
+          <span class="action-icon"><svg class="icon" aria-hidden="true"><use href="#i-restart" /></svg></span>
+          <span class="micro">Replay</span>
+        </button>
+        <button class="action" type="button" data-action="menu">
+          <span class="action-icon"><svg class="icon" aria-hidden="true"><use href="#i-menu" /></svg></span>
+          <span class="micro">Menu</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay overlay-lose" data-overlay="lose" role="dialog" aria-modal="true" aria-label="Out of lives" inert>
+    <div class="overlay-card">
+      <div class="badge badge-lose" aria-hidden="true">
+        <svg class="icon"><use href="#i-arrowhead-line" /></svg>
+      </div>
+      <p class="micro">Out of lives</p>
+      <div class="overlay-actions">
+        <button class="action action-primary" type="button" data-action="restart" data-autofocus>
+          <span class="action-icon"><svg class="icon" aria-hidden="true"><use href="#i-restart" /></svg></span>
+          <span class="micro">Retry</span>
+        </button>
+        <button class="action" type="button" data-action="menu">
+          <span class="action-icon"><svg class="icon" aria-hidden="true"><use href="#i-menu" /></svg></span>
+          <span class="micro">Menu</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

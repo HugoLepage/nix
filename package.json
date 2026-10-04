@@ -1,4 +1,10 @@
 {
+  "name": "nix",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "dependencies": {
     "astro": "^7.3.2"
   },

@@ -1,0 +1,38 @@
+<section class="screen" data-screen="menu" aria-label="Menu" inert>
+  <div class="stack">
+    <h1 class="brand">
+      <svg class="logo" viewBox="-10 -10 250 120" role="img" aria-label="Nix">
+        <g class="logo-base" stroke="url(#grad-logo)">
+          <path pathLength="100" d="M0 100 V0 L64 100 V0" />
+          <path pathLength="100" d="M112 0 V100" />
+          <path pathLength="100" d="M160 0 L230 100 M230 0 L160 100" />
+        </g>
+        <g class="logo-pulse">
+          <path pathLength="100" d="M0 100 V0 L64 100 V0" />
+          <path pathLength="100" d="M112 0 V100" />
+          <path pathLength="100" d="M160 0 L230 100 M230 0 L160 100" />
+        </g>
+      </svg>
+    </h1>
+
+    <nav class="menu stagger" aria-label="Main">
+      <button id="menu-play" class="btn btn-primary" type="button" data-autofocus>
+        <span id="menu-play-label" class="btn-label">Start</span>
+        <span id="menu-play-level" class="btn-meta" hidden></span>
+      </button>
+      <button class="btn" type="button" data-nav="chapters">
+        <span class="btn-label">Chapters</span>
+      </button>
+      <button class="btn" type="button" data-nav="howto">
+        <span class="btn-label">How to play</span>
+      </button>
+    </nav>
+  </div>
+
+  <div class="user-chip">
+    <span id="user-name" class="user-name"></span>
+    <button id="sign-out" class="icon-btn icon-btn-small" type="button" aria-label="Sign out">
+      <svg class="icon" aria-hidden="true"><use href="#i-signout" /></svg>
+    </button>
+  </div>
+</section>

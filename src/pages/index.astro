@@ -1,17 +1,28 @@
 ---
-// Welcome to Astro! Everything between these triple-dash code fences
-// is your "component frontmatter". It never runs in the browser.
-console.log('This runs in your terminal, not the browser!');
+import Layout from '../layouts/Layout.astro';
+import Defs from '../components/Defs.astro';
+import Backdrop from '../components/Backdrop.astro';
+import BootScreen from '../components/BootScreen.astro';
+import LoginScreen from '../components/LoginScreen.astro';
+import MenuScreen from '../components/MenuScreen.astro';
+import ChaptersScreen from '../components/ChaptersScreen.astro';
+import HowtoScreen from '../components/HowtoScreen.astro';
+import GameScreen from '../components/GameScreen.astro';
 ---
-<!-- Below is your "component template." It's just HTML, but with
-    some magic sprinkled in to help you build great templates. -->
-<html>
-  <body>
-    <h1>Hello, World!</h1>
-  </body>
-</html>
-<style>
-  h1 {
-    color: orange;
-  }
-</style>
+
+<Layout>
+  <div id="app" data-screen="boot">
+    <Defs />
+    <Backdrop />
+    <BootScreen />
+    <LoginScreen />
+    <MenuScreen />
+    <ChaptersScreen />
+    <HowtoScreen />
+    <GameScreen />
+  </div>
+
+  <script>
+    import '../scripts/main.js';
+  </script>
+</Layout>

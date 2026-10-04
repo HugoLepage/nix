@@ -1,0 +1,156 @@
+<!-- Animated parts sit at the origin of a translated group, so CSS transforms scale and spin them about their centre. -->
+<section class="screen" data-screen="howto" aria-label="How to play" inert>
+  <header class="screen-head">
+    <button class="icon-btn" type="button" data-nav="back" aria-label="Back" data-autofocus>
+      <svg class="icon" aria-hidden="true"><use href="#i-back" /></svg>
+    </button>
+    <h2 class="micro screen-title">How to play</h2>
+  </header>
+
+  <div class="howto-grid stagger">
+    <figure class="card card-wide">
+      <svg class="diagram d-move" viewBox="0 0 310 110" role="img" aria-label="Move with W A S D, the arrow keys, or by swiping">
+        <g class="d-keys">
+          <g transform="translate(20 32)">
+            <g class="d-key d-key-up" transform="translate(25 0)">
+              <rect width="22" height="22" rx="5" />
+              <text x="11" y="14.5">W</text>
+            </g>
+            <g class="d-key d-key-left" transform="translate(0 25)">
+              <rect width="22" height="22" rx="5" />
+              <text x="11" y="14.5">A</text>
+            </g>
+            <g class="d-key d-key-down" transform="translate(25 25)">
+              <rect width="22" height="22" rx="5" />
+              <text x="11" y="14.5">S</text>
+            </g>
+            <g class="d-key d-key-right" transform="translate(50 25)">
+              <rect width="22" height="22" rx="5" />
+              <text x="11" y="14.5">D</text>
+            </g>
+          </g>
+          <g transform="translate(120 32)">
+            <g class="d-key d-key-up" transform="translate(25 0)">
+              <rect width="22" height="22" rx="5" />
+              <path d="M7 13 L11 9 L15 13" />
+            </g>
+            <g class="d-key d-key-left" transform="translate(0 25)">
+              <rect width="22" height="22" rx="5" />
+              <path d="M13 7 L9 11 L13 15" />
+            </g>
+            <g class="d-key d-key-down" transform="translate(25 25)">
+              <rect width="22" height="22" rx="5" />
+              <path d="M7 9 L11 13 L15 9" />
+            </g>
+            <g class="d-key d-key-right" transform="translate(50 25)">
+              <rect width="22" height="22" rx="5" />
+              <path d="M9 7 L13 11 L9 15" />
+            </g>
+          </g>
+        </g>
+        <g class="d-swipe">
+          <path class="d-swipe-track" d="M0 0 H64" />
+          <path class="d-swipe-tail" pathLength="100" d="M0 0 H64" />
+          <circle class="d-swipe-dot" r="7" />
+        </g>
+      </svg>
+      <figcaption class="micro">Move</figcaption>
+    </figure>
+
+    <figure class="card">
+      <svg class="diagram d-claim" viewBox="0 0 150 110" role="img" aria-label="Draw a line across open space to claim the area it closes off">
+        <rect class="d-field" x="10" y="10" width="130" height="90" rx="2" />
+        <g transform="translate(77.5 37.5)">
+          <rect class="d-fill" x="-27.5" y="-27.5" width="55" height="55" fill="url(#grad-ice)" />
+        </g>
+        <rect class="d-rail" x="10" y="10" width="130" height="90" rx="2" />
+        <path class="d-trail" pathLength="100" d="M50 10 V65 H105 V10" />
+        <g class="d-arrow">
+          <use href="#i-arrowhead" x="-8" y="-8" width="16" height="16" />
+        </g>
+      </svg>
+      <figcaption class="micro">Claim</figcaption>
+    </figure>
+
+    <figure class="card">
+      <svg class="diagram d-sparx" viewBox="0 0 150 110" role="img" aria-label="Sparks patrol the border. Do not let one reach you">
+        <rect class="d-field" x="10" y="10" width="130" height="90" rx="2" />
+        <rect class="d-rail" x="10" y="10" width="130" height="90" rx="2" />
+        <g transform="translate(75 10)">
+          <circle class="d-hit" r="14" />
+        </g>
+        <g class="d-arrow">
+          <use href="#i-arrowhead" x="-8" y="-8" width="16" height="16" />
+        </g>
+        <g class="d-spark">
+          <path class="d-spark-rays" d="M-7 0 H7 M0 -7 V7 M-4.5 -4.5 L4.5 4.5 M-4.5 4.5 L4.5 -4.5" />
+          <circle r="2.6" />
+        </g>
+      </svg>
+      <figcaption class="micro">Avoid</figcaption>
+    </figure>
+
+    <figure class="card">
+      <svg class="diagram d-qix" viewBox="0 0 150 110" role="img" aria-label="Do not let the Qix touch your unfinished line">
+        <rect class="d-field" x="10" y="10" width="130" height="90" rx="2" />
+        <rect class="d-rail" x="10" y="10" width="130" height="90" rx="2" />
+        <path class="d-trail" pathLength="100" d="M56 10 V72" />
+        <g transform="translate(56 52)">
+          <circle class="d-hit" r="14" />
+        </g>
+        <g class="d-arrow">
+          <use href="#i-arrowhead" x="-8" y="-8" width="16" height="16" />
+        </g>
+        <g class="d-ribbon">
+          <path d="M-14 -16 L12 14" />
+          <path d="M-10 -18 L15 9" />
+          <path d="M-5 -19 L17 3" />
+          <path d="M1 -19 L18 -4" />
+        </g>
+      </svg>
+      <figcaption class="micro">Protect</figcaption>
+    </figure>
+
+    <figure class="card card-wide">
+      <svg class="diagram d-goal" viewBox="0 0 310 110" role="img" aria-label="Claim 75 percent of the board to clear the level">
+        <defs>
+          <clipPath id="d-goal-clip">
+            <rect x="29" y="62" width="252" height="8" rx="4" />
+          </clipPath>
+        </defs>
+        <text class="d-goal-text" x="281" y="46">75%</text>
+        <rect class="d-goal-track" x="29" y="62" width="252" height="8" rx="4" />
+        <g clip-path="url(#d-goal-clip)">
+          <g transform="translate(29 62)">
+            <rect class="d-goal-fill" width="252" height="8" fill="url(#grad-ice)" />
+          </g>
+        </g>
+        <g transform="translate(281 66)">
+          <circle class="d-goal-ring" r="8" />
+          <circle class="d-goal-marker" r="4" />
+        </g>
+      </svg>
+      <figcaption class="micro">Goal</figcaption>
+    </figure>
+
+    <figure class="card">
+      <svg class="diagram d-lives" viewBox="0 0 150 110" role="img" aria-label="Three lives per level">
+        <g class="d-ghosts">
+          <use href="#i-arrowhead-line" x="27" y="42" width="26" height="26" />
+          <use href="#i-arrowhead-line" x="62" y="42" width="26" height="26" />
+          <use href="#i-arrowhead-line" x="97" y="42" width="26" height="26" />
+        </g>
+        <g transform="translate(40 55)">
+          <use class="d-life d-life-1" href="#i-arrowhead" x="-13" y="-13" width="26" height="26" />
+        </g>
+        <g transform="translate(75 55)">
+          <use class="d-life d-life-2" href="#i-arrowhead" x="-13" y="-13" width="26" height="26" />
+        </g>
+        <g transform="translate(110 55)">
+          <use class="d-life d-life-3" href="#i-arrowhead" x="-13" y="-13" width="26" height="26" />
+        </g>
+      </svg>
+      <figcaption class="micro">Lives</figcaption>
+    </figure>
+  </div>
+</section>

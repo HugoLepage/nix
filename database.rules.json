@@ -1,0 +1,50 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      "$key": {
+        ".read": true,
+        ".write": "!data.exists()",
+        ".validate": "newData.hasChildren(['name', 'salt', 'iter', 'verifier', 'created'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 16 && newData.val().matches(/^[A-Za-z0-9_\\-]+$/) && newData.val().toLowerCase() === $key"
+        },
+        "salt": {
+          ".validate": "newData.isString() && newData.val().length === 32 && newData.val().matches(/^[0-9a-f]+$/)"
+        },
+        "iter": {
+          ".validate": "newData.isNumber() && newData.val() === 150000"
+        },
+        "verifier": {
+          ".validate": "newData.isString() && newData.val().length === 64 && newData.val().matches(/^[0-9a-f]+$/)"
+        },
+        "created": {
+          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1577836800000 && newData.val() <= now + 86400000"
+        },
+        "$other": { ".validate": false }
+      }
+    },
+    "saves": {
+      "$secret": {
+        ".read": true,
+        ".write": "newData.exists() && $secret.length === 64 && $secret.matches(/^[0-9a-f]+$/)",
+        ".validate": "newData.hasChild('unlocked')",
+        "unlocked": {
+          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1 && newData.val() <= 4 && (!data.isNumber() || newData.val() >= data.val())"
+        },
+        "last": {
+          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1 && newData.val() <= 3"
+        },
+        "best": {
+          ".validate": "newData.hasChildren()",
+          "l1": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 86400" },
+          "l2": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 86400" },
+          "l3": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 86400" },
+          "$other": { ".validate": false }
+        },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}

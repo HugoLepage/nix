@@ -1,0 +1,58 @@
+<section class="screen" data-screen="login" aria-label="Sign in" inert>
+  <div class="stack stagger">
+    <h1 class="brand">
+      <svg class="logo" viewBox="-10 -10 250 120" role="img" aria-label="Nix">
+        <g class="logo-base" stroke="url(#grad-logo)">
+          <path pathLength="100" d="M0 100 V0 L64 100 V0" />
+          <path pathLength="100" d="M112 0 V100" />
+          <path pathLength="100" d="M160 0 L230 100 M230 0 L160 100" />
+        </g>
+        <g class="logo-pulse">
+          <path pathLength="100" d="M0 100 V0 L64 100 V0" />
+          <path pathLength="100" d="M112 0 V100" />
+          <path pathLength="100" d="M160 0 L230 100 M230 0 L160 100" />
+        </g>
+      </svg>
+    </h1>
+
+    <form id="login-form" class="panel login" novalidate>
+      <label class="field">
+        <span class="micro">Username</span>
+        <input
+          id="login-username"
+          name="username"
+          type="text"
+          autocomplete="username"
+          autocapitalize="none"
+          autocorrect="off"
+          spellcheck="false"
+          enterkeyhint="next"
+          maxlength="16"
+          required
+          data-autofocus
+        />
+      </label>
+      <label class="field">
+        <span class="micro">Password</span>
+        <input
+          id="login-password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          enterkeyhint="go"
+          maxlength="64"
+          required
+        />
+      </label>
+      <button id="login-submit" class="btn btn-primary" type="submit">
+        <span class="btn-label">Play</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+
+    <div class="login-foot">
+      <p id="login-error" class="micro login-error" role="alert"></p>
+      <p class="micro login-hint">New name · new account</p>
+    </div>
+  </div>
+</section>
