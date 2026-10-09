@@ -504,8 +504,7 @@ export class Actors {
       if (player.drawing) this._drawTrailTip(ctx, view, grid, player);
       this._drawArrow(ctx, px, py, player.angle, cs * scale, null);
       if (look.cut > 0.01) this._drawCutGlint(ctx, cs, px, py, player.angle, cs * scale, look.cut);
-      const shield = look.shield * look.shieldFlicker;
-      if (shield > 0.01) this._drawShield(ctx, cs, px, py, shield * Math.min(1, scale));
+      if (look.shield > 0.01) this._drawShield(ctx, cs, px, py, look.shield * Math.min(1, scale));
     }
   }
 
@@ -700,7 +699,7 @@ export class Actors {
     ctx.stroke();
   }
 
-  /** Shield: a cyan glass bubble with energy running round its rim; it pops in, and flickers as it runs out. */
+  /** Shield: a cyan glass bubble with energy running round its rim; it pops in, and holds until it takes a hit. */
   _drawShield(ctx, cs, px, py, level) {
     const look = this.look;
     const time = this._time;

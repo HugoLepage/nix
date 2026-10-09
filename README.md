@@ -26,13 +26,13 @@ enemies hunt you and your unfinished trail.
 
 ### Power-ups
 
-Pick-ups float in the open field for a few seconds; touch one, or capture the area it sits in, to collect it.
+Pick-ups float in the open field for half a minute or so; touch one, or capture the area it sits in, to collect it.
 A death ends every running power.
 
 | Power-up | First seen | Effect |
 |---|---|---|
 | Boost | level 6 | Moves you faster for a few seconds. |
-| Shield | level 10 | Absorbs one hit to you or your unfinished line. |
+| Shield | level 10 | Stays up until it absorbs one hit to you or your unfinished line. |
 | Slow-mo | level 14 | Slows every enemy down for a few seconds. |
 | Extra life | level 16 | One more life, up to five. |
 | Time stop | level 20 | Freezes every enemy for a few seconds (they stay deadly to touch). |

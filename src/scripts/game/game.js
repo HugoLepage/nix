@@ -98,7 +98,7 @@ export class Game {
     return this._elapsed;
   }
 
-  /** The running powers: { speed, freeze, slow, shield } in seconds left (0 = off), `cut` armed. Read-only. */
+  /** The running powers: { speed, freeze, slow } in seconds left (0 = off), `shield` up, `cut` armed. Read-only. */
   get powers() {
     return this._powerUps.active;
   }
@@ -347,7 +347,7 @@ export class Game {
 
   /** A blow landed at `at` ({x, y}), dealt by `foe` (null for a sparx): fatal, unless a shield is up to take it. */
   _hit(at, foe = null) {
-    if (this._powerUps.active.shield <= 0) return this._die();
+    if (!this._powerUps.active.shield) return this._die();
     const { player } = this;
     this._powerUps.absorb();
     if (foe) this._spared.add(foe);

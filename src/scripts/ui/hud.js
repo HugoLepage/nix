@@ -132,7 +132,7 @@ export function createHud(root) {
 
   /**
    * A chip's face: the glyph inside a ring. A timed power's ring drains from `left` seconds (CSS runs it, paused
-   * whenever the game is); the armed cut's ring stays full. Rebuilt on every update, which restarts the CSS
+   * whenever the game is); the shield's and the armed cut's rings stay full. Rebuilt on every update, which restarts the CSS
    * animations exactly where the game's own timer stands.
    */
   function chipBody(type, left) {
@@ -204,7 +204,7 @@ export function createHud(root) {
   }
 
   /**
-   * `powers` is the game's snapshot: { speed, freeze, slow, shield } in seconds left (0 = off), `cut` = armed.
+   * `powers` is the game's snapshot: { speed, freeze, slow } in seconds left (0 = off), `shield` = up, `cut` = armed.
    * Anything missing counts as off, so `setPowers(null)` clears the tray.
    */
   function setPowers(powers, { animate = true } = {}) {

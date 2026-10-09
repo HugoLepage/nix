@@ -21,7 +21,7 @@
  *                  phase (the foe's own clock: freeze / slow show by it standing still / crawling), alive;
  *                  seeker locked, boost; spawner spin, ports, charge, nextPort; chipper spin.
  *         pickups  field items { type, x, y, age, life, alive }: bob, pulse, blink for the last 3 s of `life`.
- *         powers   { speed, freeze, slow, shield, cut } seconds left (cut: boolean). Optional: absent = none.
+ *         powers   { speed, freeze, slow, shield, cut } seconds left (shield, cut: boolean). Optional: absent = none.
  *       Entities are read through their documented fields only; `alive === false` hides one.
  *   cellSize, offsetX, offsetY   board → CSS px:  sx = offsetX + (x + 0.5) * cellSize
  *   effects            Effects instance. The game multiplies its SIMULATION dt by effects.timeScale

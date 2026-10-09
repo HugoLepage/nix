@@ -1,6 +1,6 @@
 import { POWERS, TUNING } from '../config.js';
 
-const TIMED = ['speed', 'freeze', 'slow', 'shield'];
+const TIMED = ['speed', 'freeze', 'slow'];
 const LIFE_WEIGHT = 0.4; // extra lives turn up less often than the other powers (weight 1)
 const SPAWN_TRIES = 40;
 const RETRY = 1; // s before another try when no cell qualified (or the pool had nothing allowed to draw)
@@ -10,15 +10,15 @@ const PLAYER_GAP = 5; // cells from the arrowhead
 
 /**
  * The level's power-ups: the pick-up waiting in the field (one at a time, drawn from the level's pool) and the
- * powers running. `active` = { speed, freeze, slow, shield, cut }: seconds left for the four timed ones (0 = off;
- * a shield above 0 is up), `cut` = armed. A pick-up is `{ type, x, y, age, life, alive }` on an integer cell.
+ * powers running. `active` = { speed, freeze, slow, shield, cut }: seconds left for the three timed ones (0 = off),
+ * `shield` = up (until it takes a hit), `cut` = armed. A pick-up is `{ type, x, y, age, life, alive }` on an integer cell.
  * `update` is fed play time only, so everything here holds still through a pause and the death pause. What a
  * power does to the player, the lives and the screen is the game's business.
  */
 export class PowerUps {
   constructor(rng = Math.random) {
     this.rng = rng;
-    this.active = { speed: 0, freeze: 0, slow: 0, shield: 0, cut: false };
+    this.active = { speed: 0, freeze: 0, slow: 0, shield: false, cut: false };
     this.pickups = [];
     this.grace = 0; // s of total immunity left since the shield took a hit
     this._pool = [];
@@ -55,24 +55,24 @@ export class PowerUps {
     return { ...this.active };
   }
 
-  /** Starts (or restarts, at full length) a timed power, or arms the cut. 'life' is the game's alone. */
+  /** Starts (or restarts, at full length) a timed power, raises the shield or arms the cut. 'life' is the game's alone. */
   start(type) {
-    if (type === 'cut') this.active.cut = true;
+    if (type === 'cut' || type === 'shield') this.active[type] = true;
     else if (TIMED.includes(type)) this.active[type] = POWERS[type].duration;
   }
 
   /** The shield took a hit: it is spent, and a short grace keeps the next blow from landing straight away. */
   absorb() {
-    this.active.shield = 0;
+    this.active.shield = false;
     this.grace = TUNING.shieldGrace;
   }
 
   /** Ends every power (death). Returns whether any was running. */
   clear() {
     const { active } = this;
-    const running = active.cut || TIMED.some((type) => active[type] > 0);
+    const running = active.cut || active.shield || TIMED.some((type) => active[type] > 0);
     for (const type of TIMED) active[type] = 0;
-    active.cut = false;
+    active.cut = active.shield = false;
     this.grace = 0;
     return running;
   }

@@ -3,12 +3,11 @@ import { TAU, approach, glowSprite } from './fx-util.js';
 
 const RISE = 14; // 1 / s: a power's look snaps in …
 const FALL = 5; // … and lets go a little more gently
-const SHIELD_WARN = 2; // s: the shield flickers through its last seconds …
-const BOOST_WARN = 1.2; // … and so does the afterburner
+const BOOST_WARN = 1.2; // s: the afterburner flickers through its last seconds
 const FROST = COLORS.powers.freeze;
 const SAND = COLORS.powers.slow;
 const NO_DASH = [];
-const NO_POWERS = Object.freeze({ speed: 0, freeze: 0, slow: 0, shield: 0, cut: false });
+const NO_POWERS = Object.freeze({ speed: 0, freeze: 0, slow: 0, shield: false, cut: false });
 
 /** Names popped when a pick-up is collected: the same names as the field guide. */
 export const POWER_LABELS = {
@@ -58,10 +57,8 @@ export class PowerLook {
     this.shieldAge = 1; // seconds since the shield last went up: drives the bubble's pop-in
     this.grace = 0; // seconds left of the immunity that follows a broken shield
     this.froze = false; // true for the one frame in which a time stop took hold
-    this.shieldFlicker = 1; // 1 while the shield is steady; a quickening on / off through its last seconds
-    this.boostFlicker = 1; // the same for the afterburner
+    this.boostFlicker = 1; // 1 while the afterburner is steady; a quickening on / off through its last seconds
     this._frozen = false;
-    this._shieldBlink = 0;
     this._boostBlink = 0;
   }
 
@@ -76,18 +73,16 @@ export class PowerLook {
     this.frost = ease(this.frost, frozen ? 1 : 0, dt);
     this.sand = ease(this.sand, powers.slow > 0 ? 1 : 0, dt);
     this.boost = ease(this.boost, powers.speed > 0 ? 1 : 0, dt);
-    // A shield that runs out is gone at once, like a broken one: a fading bubble would promise cover that has
-    // ended. Only on a won level, with nothing left to hit, does it fade with the rest.
-    this.shield = powers.shield > 0 ? ease(this.shield, 1, dt) : won ? ease(this.shield, 0, dt) : 0;
+    // A shield that is lost (broken, or taken by a death) is gone at once: a fading bubble would promise cover that
+    // has ended. Only on a won level, with nothing left to hit, does it fade with the rest.
+    this.shield = powers.shield ? ease(this.shield, 1, dt) : won ? ease(this.shield, 0, dt) : 0;
     this.cut = ease(this.cut, powers.cut ? 1 : 0, dt);
     // Held once the timer is out, so a look that lets go fades from wherever its blink stood, never from full.
-    if (powers.shield > 0) this.shieldFlicker = blink(this._shieldBlink, powers.shield, SHIELD_WARN);
     if (powers.speed > 0) this.boostFlicker = blink(this._boostBlink, powers.speed, BOOST_WARN);
     this.shieldAge += dt;
     // Warnings and the grace run on play time, like the timers they show: a pause holds them.
     if (scene.state === 'paused') return;
     this.time += dt;
-    this._shieldBlink += dt * blinkRate(powers.shield, SHIELD_WARN);
     this._boostBlink += dt * blinkRate(powers.speed, BOOST_WARN);
     if (scene.state === 'playing') this.grace = Math.max(0, this.grace - dt);
   }
@@ -110,7 +105,7 @@ export class PowerLook {
   /** Strength of the cyan sheath on the line: the shield itself, then the grace fading out behind it. */
   get sheath() {
     const grace = this.grace > 0 ? (this.grace / TUNING.shieldGrace) * (Math.sin(this.time * 38) > 0 ? 0.9 : 0.35) : 0;
-    return Math.max(this.shield * this.shieldFlicker, grace);
+    return Math.max(this.shield, grace);
   }
 
   // ── Enemy overlays ───────────────────────────────────────────────────────

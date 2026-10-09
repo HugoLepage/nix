@@ -63,19 +63,19 @@ export const TUNING = {
   pickupFirst: 6, // s into the level before the first pick-up appears
   pickupGapMin: 8,
   pickupGapMax: 14,
-  pickupLife: 12, // s a pick-up waits in the field (it blinks for the last 3)
+  pickupLife: 36, // s a pick-up waits in the field (it blinks for the last 3)
   pickupReach: 0.95, // cells, arrowhead centre to pick-up centre
   pickupRadius: 0.8, // drawn radius, cells
   shieldGrace: 1.2, // s of total immunity (ship and line) after the shield absorbs a hit
 };
 
 export const POWER_TYPES = ['speed', 'freeze', 'slow', 'shield', 'cut', 'life'];
-// Seconds each power runs; 0 means it is instant (life) or armed until it fires (cut).
+// Seconds each power runs; 0 means it is instant (life), armed until it fires (cut) or up until it takes a hit (shield).
 export const POWERS = {
   speed: { duration: 6 },
   freeze: { duration: 4 },
   slow: { duration: 7, factor: 0.45 },
-  shield: { duration: 12 },
+  shield: { duration: 0 }, // up until it absorbs a hit
   cut: { duration: 0 }, // armed until it fires
   life: { duration: 0 }, // instant
 };
