@@ -59,7 +59,10 @@ export function createPlay(root, { createGame, navigate }) {
       game.on('state', onState),
       game.on('lives', onLives),
       game.on('progress', onProgress),
-      game.on('qixDestroyed', () => vibrate([15, 30, 15])),
+      game.on('powers', (powers) => hud.setPowers(powers)),
+      game.on('foeDestroyed', () => vibrate([15, 30, 15])),
+      game.on('pickup', () => vibrate([10, 30, 20])),
+      game.on('shatter', () => vibrate([50, 40, 30, 40, 70])),
       game.on('win', onWin),
       game.on('lose', onLose),
     ];
@@ -116,6 +119,13 @@ export function createPlay(root, { createGame, navigate }) {
     else if (state === 'paused') overlays.show('pause');
     // A pause taken during the death pause resumes into the rest of it.
     else if (state === 'playing' || state === 'dying') overlays.hide();
+    // The chips count down on their own between 'powers' events; every return to play lines them up with the game.
+    if (state === 'playing') resyncPowers();
+  }
+
+  function resyncPowers() {
+    const { powers } = session.game;
+    if (powers && typeof powers === 'object') hud.setPowers(powers);
   }
 
   function onLives({ lives }) {
@@ -124,6 +134,7 @@ export function createPlay(root, { createGame, navigate }) {
     hud.setLives(lives);
   }
 
+  /** `gained` is negative when a chipper shatters captured land; the 'shatter' event has its own haptic. */
   function onProgress({ fraction, gained }) {
     if (gained > 0) vibrate(12);
     hud.setProgress(fraction);

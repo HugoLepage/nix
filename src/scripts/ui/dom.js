@@ -23,6 +23,13 @@ export function icon(symbolId, className = 'icon') {
   return svg;
 }
 
+/** `#rrggbb` at `alpha`, as an `rgba()` string: glows and rims in an enemy's or a power's own colour. */
+export function tint(hex, alpha) {
+  const value = Number.parseInt(String(hex).replace('#', ''), 16);
+  if (!Number.isFinite(value)) return `rgba(255, 255, 255, ${alpha})`;
+  return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
+}
+
 export const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /**
@@ -52,6 +59,36 @@ export function shake(element, delay = 0) {
     { transform: ['translateX(0)', 'translateX(-9px)', 'translateX(8px)', 'translateX(-6px)', 'translateX(4px)', 'translateX(0)'] },
     { duration: 420, delay, easing: 'cubic-bezier(0.36, 0.07, 0.19, 0.97)' },
   );
+}
+
+/**
+ * Scrolls the screen holding `element` just enough to show it whole, clear of the screen's padding (and so of the
+ * safe areas), or with `center` to bring it to the middle. Positions are read from layout, so an entrance transform
+ * still in flight cannot skew them, and only the `.screen` scrolls: the app shell around it never moves.
+ */
+export function reveal(element, { center = false, smooth = false } = {}) {
+  const scroller = element?.closest('.screen');
+  if (!scroller || scroller.scrollHeight <= scroller.clientHeight) return;
+  const style = getComputedStyle(scroller);
+  // The game screen clips instead of scrolling: script must not scroll it either.
+  if (style.overflowY !== 'auto' && style.overflowY !== 'scroll') return;
+  let top = 0;
+  let node = element;
+  for (; node && node !== scroller; node = node.offsetParent) top += node.offsetTop;
+  if (node !== scroller) return;
+  const padTop = parseFloat(style.paddingTop) || 0;
+  const padBottom = parseFloat(style.paddingBottom) || 0;
+  const view = scroller.clientHeight;
+  const bottom = top + element.offsetHeight;
+  const { scrollTop } = scroller;
+  let target;
+  if (center) target = (top + bottom - view) / 2;
+  else if (top < scrollTop + padTop) target = top - padTop;
+  else if (bottom > scrollTop + view - padBottom) target = bottom + padBottom - view;
+  else return;
+  target = Math.max(0, Math.min(scroller.scrollHeight - view, Math.round(target)));
+  if (Math.abs(target - scrollTop) < 1) return;
+  scroller.scrollTo({ top: target, behavior: smooth && !prefersReducedMotion() ? 'smooth' : 'auto' });
 }
 
 export const pad2 = (n) => String(n).padStart(2, '0');

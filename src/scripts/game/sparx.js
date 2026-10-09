@@ -63,11 +63,30 @@ export class Sparx {
   }
 
   /**
-   * Call after every capture. Everything else is re-evaluated at the next cell
+   * Call after every change to the land. Everything else is re-evaluated at the next cell
    * centre; only a homing route has to be dropped because its goal may be buried now.
+   * Land can also vanish (a chipper shattered a region): standing on it, or bound for it, means a jump to the rail.
    */
   onGridChanged() {
     this._path = null;
+    const { grid, cell } = this;
+    const target = this._target;
+    if (grid.isSolid(cell.x, cell.y) && (!target || grid.isSolid(target.x, target.y))) return;
+    const rail = grid.nearestFrontier(this.x, this.y);
+    if (rail) this.relocate(rail);
+  }
+
+  /** Snaps onto rail cell `cell` at rest; the hand rule picks a heading afresh from there. */
+  relocate(cell) {
+    this.cell = { x: cell.x, y: cell.y };
+    this.x = cell.x;
+    this.y = cell.y;
+    this.homing = false;
+    this._heading = -1;
+    this._target = null;
+    this._progress = 0;
+    this._path = null;
+    this._pathIndex = 0;
   }
 
   _depart(player) {
@@ -158,4 +177,20 @@ export class Sparx {
     const hy = this.cell.y + side.y;
     return this.grid.get(hx, hy) !== SOLID || this.grid.get(hx - ahead.x, hy - ahead.y) !== SOLID;
   }
+}
+
+/**
+ * Sparx alike in speed and hand, all starting on one cell, would lap as one for good. Before play on a fresh board,
+ * the k-th of n such twins walks k / 2n of a lap along its own way: they share out the half lap that ends at the
+ * player's spawn (top centre, opposite the sparx start) without ever reaching it.
+ */
+export function spreadTwins(grid, sparx) {
+  const lap = 2 * (grid.cols - 1 + grid.rows - 1); // cells of the outer rail
+  const twins = new Map();
+  for (const s of sparx) {
+    const key = `${s.speed}|${s.clockwise}`;
+    twins.set(key, [...(twins.get(key) || []), s]);
+  }
+  // A plain walk along the outer rail: nothing is buried yet, so no player is needed to rejoin it.
+  for (const group of twins.values()) group.forEach((s, k) => s.update((k * lap) / (2 * group.length) / s.speed));
 }

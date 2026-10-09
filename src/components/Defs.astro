@@ -14,6 +14,45 @@
       <stop offset="0.7" stop-color="#4db8ff" />
       <stop offset="1" stop-color="#3b82f6" />
     </linearGradient>
+    <!-- Enemy bodies: the same fills the canvas paints them with (fx-foes.js), lit from the top left. -->
+    <radialGradient id="grad-qix" fx="0.41" fy="0.39">
+      <stop offset="0" stop-color="#ffffff" />
+      <stop offset="0.16" stop-color="#ffc8f2" />
+      <stop offset="0.44" stop-color="#ff4fd8" />
+      <stop offset="0.8" stop-color="#a855f7" />
+      <stop offset="1" stop-color="#4c1d95" />
+    </radialGradient>
+    <!-- User space, centred on the symbol: the colour runs out along each spike to a white-hot tip. -->
+    <radialGradient id="grad-chipper-spikes" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="10.6">
+      <stop offset="0.45" stop-color="#8f1430" />
+      <stop offset="0.7" stop-color="#ff5a3c" />
+      <stop offset="0.92" stop-color="#ffd2bf" />
+      <stop offset="1" stop-color="#ffffff" />
+    </radialGradient>
+    <radialGradient id="grad-chipper-core" fx="0.34" fy="0.31">
+      <stop offset="0" stop-color="#ff8a6a" />
+      <stop offset="0.35" stop-color="#d81b3c" />
+      <stop offset="0.75" stop-color="#6e0a22" />
+      <stop offset="1" stop-color="#3a0412" />
+    </radialGradient>
+    <linearGradient id="grad-seeker" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4fff8" />
+      <stop offset="0.35" stop-color="#c9f9dc" />
+      <stop offset="0.75" stop-color="#7fe0a6" />
+      <stop offset="1" stop-color="#46b878" />
+    </linearGradient>
+    <radialGradient id="grad-spawner" fx="0.33" fy="0.3">
+      <stop offset="0" stop-color="#9a72e0" />
+      <stop offset="0.3" stop-color="#4a2588" />
+      <stop offset="0.75" stop-color="#1f0b40" />
+      <stop offset="1" stop-color="#0e0424" />
+    </radialGradient>
+    <radialGradient id="grad-port">
+      <stop offset="0" stop-color="#ffe0f8" />
+      <stop offset="0.3" stop-color="#ff4fd8" />
+      <stop offset="0.7" stop-color="#9b5cff" />
+      <stop offset="1" stop-color="#2c0b5a" />
+    </radialGradient>
   </defs>
 
   <symbol id="i-arrowhead" viewBox="-12 -12 24 24">
@@ -55,14 +94,116 @@
     <path d="M-9 0 H9 M0 -9 V9 M-5.5 -5.5 L5.5 5.5 M-5.5 5.5 L5.5 -5.5" fill="none" stroke="#ffb347" stroke-width="1.6" stroke-linecap="round" />
     <circle r="3.2" fill="#fff3c4" stroke="none" />
   </symbol>
+
+  <!-- Enemies and power-ups. Every part sets its own fill and stroke: a `<use>` styled as an outline icon must not
+       repaint them. Halos come from a drop-shadow where an icon is placed, which keeps the shapes crisp at 16px. -->
   <symbol id="i-qix" viewBox="-12 -12 24 24">
-    <g fill="none" stroke-width="1.7" stroke-linecap="round">
-      <path d="M-9 -8 L8 9" stroke="#ff4fd8" />
-      <path d="M-6 -10 L10 5" stroke="#e052e6" opacity="0.8" />
-      <path d="M-2 -11 L11 1" stroke="#c455f0" opacity="0.6" />
-      <path d="M3 -11 L11 -4" stroke="#a855f7" opacity="0.4" />
+    <circle r="8.6" fill="url(#grad-qix)" stroke="none" />
+    <g fill="none" stroke-linecap="round">
+      <path d="M0.95 0.4 Q4.07 4.43 1.73 7.72 M-0.82 0.62 Q-5.73 1.83 -7.87 -0.81 M-0.13 -1.02 Q2.18 -5.61 6.55 -4.43" stroke="#ffb3f1" stroke-width="1.7" opacity="0.6" />
+      <path d="M0.95 0.4 Q4.07 4.43 1.73 7.72 M-0.82 0.62 Q-5.73 1.83 -7.87 -0.81 M-0.13 -1.02 Q2.18 -5.61 6.55 -4.43" stroke="#ffffff" stroke-width="0.75" />
+      <circle r="8.15" stroke="#ffb3f1" stroke-width="0.9" opacity="0.85" />
+    </g>
+    <ellipse cx="-3.45" cy="-3.8" rx="2.2" ry="0.95" transform="rotate(-43 -3.45 -3.8)" fill="#ffffff" stroke="none" opacity="0.85" />
+  </symbol>
+  <symbol id="i-chipper" viewBox="-12 -12 24 24">
+    <path d="M-1.57 -5.06 L0 -10.6 L1.57 -5.06 Z M2.05 -4.89 L6.81 -8.12 L4.45 -2.87 Z M4.71 -2.42 L10.44 -1.84 L5.26 0.66 Z M5.17 1.18 L9.18 5.3 L3.6 3.89 Z M3.2 4.22 L3.63 9.96 L0.26 5.29 Z M-0.26 5.29 L-3.63 9.96 L-3.2 4.22 Z M-3.6 3.89 L-9.18 5.3 L-5.17 1.18 Z M-5.26 0.66 L-10.44 -1.84 L-4.71 -2.42 Z M-4.45 -2.87 L-6.81 -8.12 L-2.05 -4.89 Z" fill="url(#grad-chipper-spikes)" stroke="#2e040e" stroke-opacity="0.75" stroke-width="0.7" stroke-linejoin="miter" />
+    <path d="M0 -7.84 L0 -10.6 M5.04 -6.01 L6.81 -8.12 M7.72 -1.36 L10.44 -1.84 M6.79 3.92 L9.18 5.3 M2.68 7.37 L3.63 9.96 M-2.68 7.37 L-3.63 9.96 M-6.79 3.92 L-9.18 5.3 M-7.72 -1.36 L-10.44 -1.84 M-5.04 -6.01 L-6.81 -8.12" fill="none" stroke="#ffffff" stroke-width="0.9" stroke-linecap="round" opacity="0.8" />
+    <circle r="6.6" fill="url(#grad-chipper-core)" stroke="none" />
+    <ellipse rx="5.7" ry="1.9" transform="rotate(-24)" fill="none" stroke="#ff5a3c" stroke-width="0.9" opacity="0.9" />
+    <ellipse cx="-2.55" cy="-2.85" rx="1.6" ry="0.75" transform="rotate(-43 -2.55 -2.85)" fill="#ffffff" stroke="none" opacity="0.75" />
+  </symbol>
+  <!-- Nose to the right, the radar ring round it, a pilot flame at the tail. -->
+  <symbol id="i-seeker" viewBox="-12 -12 24 24">
+    <circle r="10.9" fill="none" stroke="#5dff95" stroke-width="0.8" opacity="0.35" />
+    <path d="M9.88 -4.61 A10.9 10.9 0 0 1 9.88 4.61" fill="none" stroke="#5dff95" stroke-width="1" stroke-linecap="round" opacity="0.7" />
+    <path d="M-6.34 -2.24 Q-8.4 -1.82 -9.9 0 Q-8.4 1.82 -6.34 2.24 Z" fill="#5dff95" stroke="none" opacity="0.6" />
+    <path d="M-6.34 -1.05 Q-7.6 -0.7 -8.6 0 Q-7.6 0.7 -6.34 1.05 Z" fill="#c8ffd9" stroke="none" />
+    <path d="M-2.7 -3.78 L-7.46 -6.65 L-6.62 -2.8 Z M-2.7 3.78 L-7.46 6.65 L-6.62 2.8 Z" fill="#3fc47c" stroke="#022212" stroke-opacity="0.6" stroke-width="0.6" stroke-linejoin="round" />
+    <path d="M-6.34 -3.92 L1.5 -3.92 C4.86 -3.92 7.52 -1.82 7.52 0 C7.52 1.82 4.86 3.92 1.5 3.92 L-6.34 3.92 Q-7.18 0 -6.34 -3.92 Z" fill="url(#grad-seeker)" stroke="#022212" stroke-opacity="0.6" stroke-width="0.6" />
+    <rect x="-4.1" y="-3.92" width="1.2" height="7.84" fill="#2f9e63" stroke="none" />
+    <path d="M-4.94 -2.31 H2.9" fill="none" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity="0.75" />
+    <ellipse cx="4.05" cy="-0.84" rx="1.4" ry="1.1" fill="#06321c" stroke="none" />
+    <circle cx="4.35" cy="-0.84" r="0.62" fill="#5dff95" stroke="none" />
+  </symbol>
+  <!-- Five ports round a central vent, each foreshortened along its radius; the top one is charging. -->
+  <symbol id="i-spawner" viewBox="-12 -12 24 24">
+    <circle r="10.4" fill="url(#grad-spawner)" stroke="none" />
+    <g stroke="none">
+      <circle r="1.9" fill="#060112" fill-opacity="0.9" />
+      <circle r="1.1" fill="#dcc4ff" opacity="0.7" />
+      <g transform="rotate(-90 0 -5.82)">
+        <ellipse cx="0" cy="-5.82" rx="2.29" ry="2.86" fill="#060112" fill-opacity="0.9" />
+        <ellipse cx="0" cy="-5.82" rx="1.83" ry="2.29" fill="url(#grad-port)" />
+      </g>
+      <g transform="rotate(-18 5.54 -1.8)">
+        <ellipse cx="5.54" cy="-1.8" rx="2.29" ry="2.86" fill="#060112" fill-opacity="0.9" />
+        <ellipse cx="5.54" cy="-1.8" rx="1.83" ry="2.29" fill="url(#grad-port)" opacity="0.75" />
+      </g>
+      <g transform="rotate(54 3.42 4.71)">
+        <ellipse cx="3.42" cy="4.71" rx="2.29" ry="2.86" fill="#060112" fill-opacity="0.9" />
+        <ellipse cx="3.42" cy="4.71" rx="1.83" ry="2.29" fill="url(#grad-port)" opacity="0.75" />
+      </g>
+      <g transform="rotate(126 -3.42 4.71)">
+        <ellipse cx="-3.42" cy="4.71" rx="2.29" ry="2.86" fill="#060112" fill-opacity="0.9" />
+        <ellipse cx="-3.42" cy="4.71" rx="1.83" ry="2.29" fill="url(#grad-port)" opacity="0.75" />
+      </g>
+      <g transform="rotate(198 -5.54 -1.8)">
+        <ellipse cx="-5.54" cy="-1.8" rx="2.29" ry="2.86" fill="#060112" fill-opacity="0.9" />
+        <ellipse cx="-5.54" cy="-1.8" rx="1.83" ry="2.29" fill="url(#grad-port)" opacity="0.75" />
+      </g>
+      <circle cy="-5.82" r="1" fill="#ffe0f8" />
+    </g>
+    <path d="M-3.2 -5.82 A3.2 3.2 0 0 1 3.2 -5.82" fill="none" stroke="#ffb3f1" stroke-width="0.7" stroke-linecap="round" opacity="0.9" />
+    <circle r="10" fill="none" stroke="#dcc4ff" stroke-width="0.8" opacity="0.55" />
+    <ellipse cx="-4.35" cy="-5.2" rx="2.3" ry="0.95" transform="rotate(-40 -4.35 -5.2)" fill="#ffffff" stroke="none" opacity="0.55" />
+  </symbol>
+
+  <!-- Power-up glyphs: a neon tube in the power's colour with a thin white core, as on the pick-up badges. -->
+  <symbol id="i-pw-speed" viewBox="-12 -12 24 24">
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-7.1 -6.6 L-0.8 0 L-7.1 6.6 M0.8 -6.6 L7.1 0 L0.8 6.6" stroke="#ffe45c" stroke-width="2.6" />
+      <path d="M-7.1 -6.6 L-0.8 0 L-7.1 6.6 M0.8 -6.6 L7.1 0 L0.8 6.6" stroke="#ffffff" stroke-width="0.9" opacity="0.85" />
     </g>
   </symbol>
+  <symbol id="i-pw-freeze" viewBox="-12 -12 24 24">
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M0 0 L0 -9.24 M2.01 -7.56 L0 -5.61 L-2.01 -7.56 M0 0 L8 -4.62 M7.56 -2.04 L4.86 -2.8 L5.54 -5.52 M0 0 L8 4.62 M5.54 5.52 L4.86 2.8 L7.56 2.04 M0 0 L0 9.24 M-2.01 7.56 L0 5.61 L2.01 7.56 M0 0 L-8 4.62 M-7.56 2.04 L-4.86 2.81 L-5.54 5.52 M0 0 L-8 -4.62 M-5.54 -5.52 L-4.86 -2.81 L-7.56 -2.04" stroke="#c8f6ff" stroke-width="2.2" />
+      <path d="M0 0 L0 -9.24 M2.01 -7.56 L0 -5.61 L-2.01 -7.56 M0 0 L8 -4.62 M7.56 -2.04 L4.86 -2.8 L5.54 -5.52 M0 0 L8 4.62 M5.54 5.52 L4.86 2.8 L7.56 2.04 M0 0 L0 9.24 M-2.01 7.56 L0 5.61 L2.01 7.56 M0 0 L-8 4.62 M-7.56 2.04 L-4.86 2.81 L-5.54 5.52 M0 0 L-8 -4.62 M-5.54 -5.52 L-4.86 -2.81 L-7.56 -2.04" stroke="#ffffff" stroke-width="0.8" opacity="0.85" />
+    </g>
+  </symbol>
+  <symbol id="i-pw-slow" viewBox="-12 -12 24 24">
+    <path d="M-3.3 7.43 L3.3 7.43 L0 2.81 Z M-1.49 -4.62 L1.49 -4.62 L0 -2.31 Z" fill="#ffc46b" stroke="none" opacity="0.75" />
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-4.46 -7.92 L4.46 -7.92 L0.66 0 L4.46 7.92 L-4.46 7.92 L-0.66 0 Z M-6.27 -8.58 L6.27 -8.58 M-6.27 8.58 L6.27 8.58" stroke="#ffc46b" stroke-width="2.2" />
+      <path d="M-4.46 -7.92 L4.46 -7.92 L0.66 0 L4.46 7.92 L-4.46 7.92 L-0.66 0 Z M-6.27 -8.58 L6.27 -8.58 M-6.27 8.58 L6.27 8.58" stroke="#ffffff" stroke-width="0.8" opacity="0.85" />
+    </g>
+  </symbol>
+  <symbol id="i-pw-shield" viewBox="-12 -12 24 24">
+    <path d="M-6.93 -8.4 L6.93 -8.4 L6.93 -1.46 Q6.6 5.14 0 8.44 Q-6.6 5.14 -6.93 -1.46 Z" fill="#59f0ff" fill-opacity="0.32" stroke="none" />
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-6.93 -8.4 L6.93 -8.4 L6.93 -1.46 Q6.6 5.14 0 8.44 Q-6.6 5.14 -6.93 -1.46 Z M0 -5.75 L0 4.81" stroke="#59f0ff" stroke-width="2.4" />
+      <path d="M-6.93 -8.4 L6.93 -8.4 L6.93 -1.46 Q6.6 5.14 0 8.44 Q-6.6 5.14 -6.93 -1.46 Z M0 -5.75 L0 4.81" stroke="#ffffff" stroke-width="0.85" opacity="0.85" />
+    </g>
+  </symbol>
+  <symbol id="i-pw-cut" viewBox="-12 -12 24 24">
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-4.12 1.98 L8.25 -3.96 M-4.12 -1.98 L8.25 3.96" stroke="#d6ff6b" stroke-width="2.4" />
+      <circle cx="-5.94" cy="-3.96" r="2.48" stroke="#d6ff6b" stroke-width="2.2" />
+      <circle cx="-5.94" cy="3.96" r="2.48" stroke="#d6ff6b" stroke-width="2.2" />
+      <path d="M-4.12 1.98 L8.25 -3.96 M-4.12 -1.98 L8.25 3.96" stroke="#ffffff" stroke-width="0.85" opacity="0.85" />
+      <circle cx="-5.94" cy="-3.96" r="2.48" stroke="#ffffff" stroke-width="0.8" opacity="0.85" />
+      <circle cx="-5.94" cy="3.96" r="2.48" stroke="#ffffff" stroke-width="0.8" opacity="0.85" />
+    </g>
+  </symbol>
+  <symbol id="i-pw-life" viewBox="-12 -12 24 24">
+    <path d="M-2.4 -6.2 L-7.5 6.84 L-2.4 3.87 L2.72 6.84 Z" fill="#ffffff" fill-opacity="0.9" stroke="#bdf3ff" stroke-width="2" stroke-linejoin="round" />
+    <g fill="none" stroke-linecap="round">
+      <path d="M2.88 -4.55 L7.5 -4.55 M5.19 -6.86 L5.19 -2.24" stroke="#bdf3ff" stroke-width="2.4" />
+      <path d="M2.88 -4.55 L7.5 -4.55 M5.19 -6.86 L5.19 -2.24" stroke="#ffffff" stroke-width="0.85" opacity="0.85" />
+    </g>
+  </symbol>
+
   <symbol id="i-signout" viewBox="0 0 24 24">
     <path d="M10 4.5 H6.5 A1.5 1.5 0 0 0 5 6 v12 a1.5 1.5 0 0 0 1.5 1.5 H10 M14.5 8 L18.5 12 L14.5 16 M18.5 12 H9.5" />
   </symbol>

@@ -2,7 +2,7 @@ import { glowSprite, mix } from './fx-util.js';
 
 const STEPS = 12; // colour steps per ramp
 const HOT_STEPS = 4; // the youngest steps are near-white and drawn additively; the rest keep their hue
-const MAX_RAMPS = 16;
+const MAX_RAMPS = 32; // the renderer registers 22 up front: every enemy, power and board effect has its own
 const STREAK_TIME = 0.035; // seconds of motion a fast particle smears into a shard
 const GLOW_RADIUS = 3.4; // glow sprite radius, in particle sizes (the hot profile is all but clear beyond that)
 const MAX_GLOWS = 220; // sprites per frame: each one is a scaled additive blit, the dearest thing drawn here
@@ -43,14 +43,28 @@ export class Particles {
     this._sprites = [];
     this._additive = [];
     this._rampIds = new Map();
+    // The same list object comes back on every burst: looked up by identity, it skips building the string key.
+    this._byList = new WeakMap();
+    this._byFlatList = new WeakMap();
   }
 
-  /** Registers a hot → cool colour list and returns its ramp id (cached per list and blend). */
+  /**
+   * Registers a hot → cool colour list and returns its ramp id (cached per list and blend). Register every
+   * list once up front (constructors): ids are handed out in order and past MAX_RAMPS fall back to ramp 0.
+   */
   ramp(colors, { additive = true } = {}) {
-    const key = colors.join('|') + (additive ? '' : '|flat');
-    let id = this._rampIds.get(key);
+    const lists = additive ? this._byList : this._byFlatList;
+    let id = lists.get(colors);
     if (id !== undefined) return id;
-    id = this._rampIds.size;
+    const key = colors.join('|') + (additive ? '' : '|flat');
+    id = this._rampIds.get(key);
+    if (id === undefined) id = this._register(key, colors, additive);
+    lists.set(colors, id);
+    return id;
+  }
+
+  _register(key, colors, additive) {
+    const id = this._rampIds.size;
     if (id >= MAX_RAMPS) return 0;
     this._rampIds.set(key, id);
     this._additive.push(additive);

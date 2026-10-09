@@ -1,3 +1,16 @@
+---
+// The field guide is rendered at build time from the same catalog the game's UI reads.
+import { POWER_TYPES } from '../scripts/config.js';
+import { CATALOG } from '../scripts/ui/catalog.js';
+import { tint } from '../scripts/ui/dom.js';
+
+const entries = (keys) => keys.map((key) => ({ ...CATALOG[key], glow: tint(CATALOG[key].color, 0.5) }));
+const guide = [
+  { caption: 'Enemies', entries: entries(['chipper', 'seeker', 'spawner']), columns: 1 },
+  { caption: 'Power-ups', entries: entries(POWER_TYPES), columns: 2 },
+];
+---
+
 <!-- Animated parts sit at the origin of a translated group, so CSS transforms scale and spin them about their centre. -->
 <section class="screen" data-screen="howto" aria-label="How to play" inert>
   <header class="screen-head">
@@ -94,18 +107,23 @@
       <svg class="diagram d-qix" viewBox="0 0 150 110" role="img" aria-label="Do not let the Qix touch your unfinished line">
         <rect class="d-field" x="10" y="10" width="130" height="90" rx="2" />
         <rect class="d-rail" x="10" y="10" width="130" height="90" rx="2" />
-        <path class="d-trail" pathLength="100" d="M56 10 V72" />
-        <g transform="translate(56 52)">
+        <path class="d-trail" pathLength="100" d="M56 10 V80" />
+        <g transform="translate(56 50)">
           <circle class="d-hit" r="14" />
         </g>
         <g class="d-arrow">
           <use href="#i-arrowhead" x="-8" y="-8" width="16" height="16" />
         </g>
-        <g class="d-ribbon">
-          <path d="M-14 -16 L12 14" />
-          <path d="M-10 -18 L15 9" />
-          <path d="M-5 -19 L17 3" />
-          <path d="M1 -19 L18 -4" />
+        <!-- The orb flies straight and bounces off the walls; its plasma swirls on its own. -->
+        <g class="d-orb">
+          <g class="d-orb-fade">
+            <circle class="d-orb-body" r="9" fill="url(#grad-qix)" />
+            <g class="d-orb-swirl">
+              <path d="M1 0.42 Q4.26 4.64 1.81 8.08 M-0.86 0.65 Q-6 1.92 -8.24 -0.85 M-0.14 -1.07 Q2.28 -5.87 6.86 -4.64" />
+            </g>
+            <circle class="d-orb-rim" r="8.5" />
+            <ellipse class="d-orb-glint" cx="-3.6" cy="-4" rx="2.3" ry="1" transform="rotate(-43 -3.6 -4)" />
+          </g>
         </g>
       </svg>
       <figcaption class="micro">Protect</figcaption>
@@ -152,5 +170,26 @@
       </svg>
       <figcaption class="micro">Lives</figcaption>
     </figure>
+
+    {
+      guide.map(({ caption, entries, columns }) => (
+        <figure class="card card-wide guide">
+          <ul class:list={['guide-list', { 'guide-list-split': columns === 2 }]} aria-label={caption}>
+            {entries.map(({ name, hint, icon, color, glow }) => (
+              <li class="guide-item" style={`--accent: ${color}; --accent-glow: ${glow}`}>
+                <svg class="guide-icon" aria-hidden="true">
+                  <use href={`#${icon}`} />
+                </svg>
+                <p class="guide-text">
+                  <span class="guide-name">{name}</span>
+                  <span class="guide-hint">{hint}</span>
+                </p>
+              </li>
+            ))}
+          </ul>
+          <figcaption class="micro">{caption}</figcaption>
+        </figure>
+      ))
+    }
   </div>
 </section>

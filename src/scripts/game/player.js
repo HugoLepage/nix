@@ -1,4 +1,4 @@
-import { DIRS, EMPTY, TRAIL, TUNING } from '../config.js';
+import { DIR_NAMES, DIRS, EMPTY, TRAIL, TUNING } from '../config.js';
 
 const TAU = Math.PI * 2;
 const ANGLES = { right: 0, down: Math.PI / 2, left: Math.PI, up: -Math.PI / 2 };
@@ -13,12 +13,16 @@ const wrap = (a) => a - TAU * Math.round(a / TAU);
  * The arrowhead. Moves cell to cell at constant speed and only ever decides
  * where to go at a cell centre, so it can never leave the lattice.
  * `cell` is the last centre it reached, `target` the one it is heading for
- * (null at rest). `invuln` is granted by the game and counted down here.
+ * (null at rest). `moved` turns true at the first move after a spawn: the sparx wait for it, and so does the
+ * countdown of `invuln` (granted by the game), so a respawn blink never runs out on a ship that has not moved.
+ * The game sets `boost` (speed multiplier) and `cutArmed` (instant cut) from the running powers.
  */
 export class Player {
   constructor(grid, { speed = TUNING.playerSpeed } = {}) {
     this.grid = grid;
     this.speed = speed;
+    this.boost = 1;
+    this.cutArmed = false;
     this.invuln = 0;
     this._events = [];
     this.spawn(grid.spawnCell('top'));
@@ -45,6 +49,7 @@ export class Player {
     this.angle = ANGLES.down;
     this.drawing = false;
     this.alive = true;
+    this.moved = false;
     this._sealed = false;
   }
 
@@ -63,18 +68,22 @@ export class Player {
   }
 
   /**
-   * Advances by dt seconds (also counts `invuln` down). Returns the events that happened, in order, in an
-   * array that is reused by the next update (it runs several times a frame), so consume it right away.
+   * Advances by dt seconds (also counts `invuln` down once the arrowhead has moved). Returns the events that
+   * happened, in order, in an array that is reused by the next update (it runs several times a frame), so consume
+   * it right away.
    */
   update(dt) {
     const events = this._events;
     events.length = 0;
     if (!this.alive || !(dt > 0)) return events;
-    this.invuln = Math.max(0, this.invuln - dt);
+    // Held until the first move, like the sparx: a respawn on top of a parked sparx keeps its full blink to get clear.
+    if (this.moved) this.invuln = Math.max(0, this.invuln - dt);
+    // Armed while drawing but stuck at a centre (its own trail in the way): no arrival is coming, so cut from here.
+    if (this.cutArmed && this.drawing && !this.target) this._cut(events);
     // On the rail a U-turn is instant, Pac-Man style. Out in the field the cell behind is our own trail.
     if (this.target && !this.drawing && this.want === OPPOSITE[this.dir] && this._legal(this.want, this.target)) this._reverse();
 
-    let remaining = this.speed * dt;
+    let remaining = this.speed * this.boost * dt;
     while (remaining > 0) {
       if (!this.target && !this._depart(events)) break;
       const left = 1 - this._progress;
@@ -141,6 +150,7 @@ export class Player {
     this.dir = name;
     this.facing = name;
     this.target = target;
+    this.moved = true;
     return true;
   }
 
@@ -158,12 +168,71 @@ export class Player {
     this.cell = this.target;
     this.target = null;
     this._progress = 0;
-    if (this.drawing && this.grid.isSolid(this.cell.x, this.cell.y)) {
+    if (!this.drawing) return;
+    if (this.grid.isSolid(this.cell.x, this.cell.y)) {
       this.drawing = false;
       const result = this.grid.capture();
       if (result) events.push({ type: 'capture', result });
       // The capture buried the arrival cell: no rail here, so wait for a fresh direction instead of tunnelling on.
       if (!this.grid.isFrontier(this.cell.x, this.cell.y)) this.dir = this.want = null;
+    } else if (this.cutArmed) {
+      this._cut(events);
     }
+  }
+
+  /**
+   * Instant cut: rules the line on straight ahead (at rest: the way with the shortest run to land) through open
+   * field up to land or the trail, and closes it at once. The arrowhead stays where it is and stops.
+   * Emits {type: 'cut', cells} (the cells it drew, outward from the arrowhead) before the capture.
+   */
+  _cut(events) {
+    const { grid, cell } = this;
+    const { x: dx, y: dy } = DIRS[this.dir || this._cutDirection()];
+    const cells = [];
+    for (let x = cell.x + dx, y = cell.y + dy; grid.isEmpty(x, y); x += dx, y += dy) cells.push({ x, y });
+    for (const c of cells) grid.addTrail(c.x, c.y);
+    this.cutArmed = false;
+    this.drawing = false;
+    this._sealed = false;
+    this.dir = this.want = null;
+    events.push({ type: 'cut', cells });
+    const result = grid.capture();
+    if (result) events.push({ type: 'capture', result });
+  }
+
+  /** The way whose straight run of open field is shortest, runs that end on land before those that end on trail. */
+  _cutDirection() {
+    const { grid, cell } = this;
+    let best = DIR_NAMES[0];
+    let bestScore = Infinity;
+    for (const name of DIR_NAMES) {
+      const step = DIRS[name];
+      let x = cell.x + step.x;
+      let y = cell.y + step.y;
+      let run = 0;
+      while (grid.isEmpty(x, y)) {
+        x += step.x;
+        y += step.y;
+        run++;
+      }
+      const score = run + (grid.isSolid(x, y) ? 0 : grid.size);
+      if (score < bestScore) {
+        bestScore = score;
+        best = name;
+      }
+    }
+    return best;
+  }
+
+  /**
+   * Land under the line vanished (a chipper shattered a region) while drawing: a target that was land is open
+   * field now and joins the trail like any other step, and the seal check is redone from the head of the line.
+   */
+  onGridChanged() {
+    if (!this.alive || !this.drawing) return;
+    const { grid } = this;
+    const head = this.target || this.cell;
+    if (this.target && grid.isEmpty(head.x, head.y)) grid.addTrail(head.x, head.y);
+    this._sealed = !grid.reachesLand(head.x, head.y);
   }
 }

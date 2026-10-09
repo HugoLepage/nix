@@ -71,6 +71,9 @@ export function glowSprite(color, profile = 'hot') {
 
 export const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
+/** Frame-rate independent exponential ease of `value` toward `target` at `rate` (1 / s). */
+export const approach = (value, target, rate, dt) => value + (target - value) * (1 - Math.exp(-rate * dt));
+
 export const easeOutCubic = (p) => 1 - (1 - p) ** 3;
 
 export function easeOutBack(p, overshoot = 1.70158) {

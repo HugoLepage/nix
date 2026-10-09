@@ -5,6 +5,7 @@ import { TAU, clamp01, easeOutBack, easeOutCubic, glowSprite } from './fx-util.j
 const SHAKE_DECAY = 6.5; // 1 / seconds
 const MAX_SHAKE = 1.4; // cells
 const POPUP_LIFE = 1.15;
+const POPUP_COLOR = '#f4fdff';
 const SCORCH_COLOR = '#01040c';
 const FONT_STACK = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
@@ -135,9 +136,9 @@ export class Effects {
     this._shake = Math.min(MAX_SHAKE, Math.max(this._shake, amount * this._motionScale));
   }
 
-  /** Floating text rising from a board position. */
-  popup(x, y, text) {
-    this._popups.push({ x, y, text, t: 0 });
+  /** Floating text rising from a board position. `color` tints the fill (the dark outline stays). */
+  popup(x, y, text, { color = POPUP_COLOR } = {}) {
+    this._popups.push({ x, y, text, color, t: 0 });
   }
 
   hitStop(seconds) {
@@ -259,9 +260,9 @@ export class Effects {
     ctx.lineJoin = 'round';
     ctx.lineWidth = Math.max(3, px * 0.22);
     ctx.strokeStyle = 'rgba(3, 12, 40, 0.7)';
-    ctx.fillStyle = '#f4fdff';
     for (const pop of this._popups) {
       const p = pop.t / POPUP_LIFE;
+      ctx.fillStyle = pop.color;
       const scale = 0.4 + 0.6 * easeOutBack(clamp01(pop.t / 0.22), 2.4);
       const x = ox + pop.x * cs;
       const y = oy + (pop.y - 2.6 * easeOutCubic(p)) * cs;

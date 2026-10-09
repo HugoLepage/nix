@@ -216,7 +216,7 @@ button {
 
 /* The header lines up with whatever grid sits under it. */
 [data-screen='chapters'] {
-  --content-width: 760px;
+  --content-width: 960px;
 }
 
 [data-screen='howto'] {
@@ -283,6 +283,14 @@ button {
 
 .stagger > :nth-child(6) {
   --i: 5;
+}
+
+.stagger > :nth-child(7) {
+  --i: 6;
+}
+
+.stagger > :nth-child(8) {
+  --i: 7;
 }
 
 @keyframes rise {

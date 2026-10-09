@@ -1,16 +1,28 @@
 // In-game overlays: intro, pause, win, lose. At most one is open; its buttons report `data-action` names.
 
-import { $, formatTime, pad2 } from './dom.js';
+import { getLevel } from '../game/levels.js';
+import { entryFor } from './catalog.js';
+import { $, formatTime, pad2, tint } from './dom.js';
 import { markSwitch } from './settle.js';
 
 /** `onAction(name)` receives the `data-action` of whichever overlay button was activated. */
 export function createOverlays(root, { onAction }) {
   const overlays = new Map([...root.querySelectorAll('[data-overlay]')].map((node) => [node.dataset.overlay, node]));
+  const callout = $('#intro-new', root);
   let current = null;
 
   const fillers = {
     intro({ level }) {
       $('#intro-level', root).textContent = pad2(level);
+      // A level that brings in an enemy or a power-up introduces it: glyph, name and what it does.
+      const entry = entryFor(getLevel(level)?.intro);
+      callout.hidden = !entry;
+      if (!entry) return;
+      callout.style.setProperty('--accent', entry.color);
+      callout.style.setProperty('--accent-glow', tint(entry.color, 0.45));
+      $('.intro-new-icon use', callout).setAttribute('href', `#${entry.icon}`);
+      $('#intro-new-name', callout).textContent = entry.name;
+      $('#intro-new-hint', callout).textContent = entry.hint;
     },
     win({ time, best, fraction, last }) {
       $('#win-time', root).textContent = formatTime(time);

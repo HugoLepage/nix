@@ -31,17 +31,16 @@
         ".write": "newData.exists() && $secret.length === 64 && $secret.matches(/^[0-9a-f]+$/)",
         ".validate": "newData.hasChild('unlocked')",
         "unlocked": {
-          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1 && newData.val() <= 4 && (!data.isNumber() || newData.val() >= data.val())"
+          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1 && newData.val() <= 31 && (!data.isNumber() || newData.val() >= data.val())"
         },
         "last": {
-          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1 && newData.val() <= 3"
+          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1 && newData.val() <= 30"
         },
         "best": {
           ".validate": "newData.hasChildren()",
-          "l1": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 86400" },
-          "l2": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 86400" },
-          "l3": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 86400" },
-          "$other": { ".validate": false }
+          "$level": {
+            ".validate": "($level.matches(/^l[1-9]$/) || $level.matches(/^l[12][0-9]$/) || $level === 'l30') && newData.isNumber() && newData.val() > 0 && newData.val() <= 86400"
+          }
         },
         "$other": { ".validate": false }
       }

@@ -2,9 +2,10 @@
 
 export const FIREBASE_URL = 'https://astro-nix-default-rtdb.europe-west1.firebasedatabase.app';
 
-export const LEVEL_COUNT = 3;
+export const LEVEL_COUNT = 30;
 export const WIN_FRACTION = 0.75;
 export const START_LIVES = 3;
+export const MAX_LIVES = 5; // extra-life pick-ups never push the count past this
 
 // Cell states
 export const EMPTY = 0;
@@ -31,12 +32,52 @@ export const TUNING = {
   // Player
   playerSpeed: 16, // cells / second
   playerRadius: 0.45, // cells
-  respawnInvuln: 2.0, // seconds
+  respawnInvuln: 2.0, // seconds, counted from the first move after the respawn
   deathPause: 1.6, // seconds between death and respawn
+  playerBoost: 1.5, // speed multiplier while the speed power runs
 
   // Enemies
   sparxHitDist: 0.75, // cells, centre to centre
   qixHitSlack: 0.45, // qix kills the player when dist < qix.radius + qixHitSlack
+  qixSpeed: 18, // cells / s: a touch faster than the player
+  qixRadius: 1.3,
+  chipperSpeed: 15,
+  chipperRadius: 1.15,
+  chipperHits: 6, // impacts on one captured region before it shatters back to open field
+  chipperHitCooldown: 0.25, // s: one bounce is one impact even if it grazes several sub-steps
+  seekerCruise: 3, // cells / s while the player is safe on the rail
+  seekerMax: 13, // cells / s at full chase: below the player's 16 so a quick cut can escape it
+  seekerAccel: 9, // cells / s²
+  seekerDecel: 6,
+  seekerTurn: 2.4, // rad / s steering while locked on
+  seekerRadius: 0.7,
+  seekerHitSlack: 0.35,
+  spawnerSpeed: 6,
+  spawnerRadius: 2.2,
+  spawnerPorts: 5,
+  spawnerFirst: 5, // s before the first launch
+  spawnerInterval: 10, // s between launches
+  spawnerMaxQix: 3, // live qix (any origin) above which a spawner holds its fire
+
+  // Pick-ups
+  pickupFirst: 6, // s into the level before the first pick-up appears
+  pickupGapMin: 8,
+  pickupGapMax: 14,
+  pickupLife: 12, // s a pick-up waits in the field (it blinks for the last 3)
+  pickupReach: 0.95, // cells, arrowhead centre to pick-up centre
+  pickupRadius: 0.8, // drawn radius, cells
+  shieldGrace: 1.2, // s of total immunity (ship and line) after the shield absorbs a hit
+};
+
+export const POWER_TYPES = ['speed', 'freeze', 'slow', 'shield', 'cut', 'life'];
+// Seconds each power runs; 0 means it is instant (life) or armed until it fires (cut).
+export const POWERS = {
+  speed: { duration: 6 },
+  freeze: { duration: 4 },
+  slow: { duration: 7, factor: 0.45 },
+  shield: { duration: 12 },
+  cut: { duration: 0 }, // armed until it fires
+  life: { duration: 0 }, // instant
 };
 
 export const COLORS = {
@@ -52,6 +93,13 @@ export const COLORS = {
   sparxBurst: ['#fff3c4', '#ffd166', '#ff9f1c', '#ff5d3b'],
   qix: '#ff4fd8',
   qixBurst: ['#ffffff', '#ffb3f1', '#ff4fd8', '#a855f7'],
+  chipper: '#ff5a3c',
+  chipperBurst: ['#ffffff', '#ffd2bf', '#ff6a3d', '#d81b3c'],
+  seeker: '#5dff95',
+  seekerBurst: ['#ffffff', '#c8ffd9', '#5dff95', '#11a356'],
+  spawner: '#9b5cff',
+  spawnerBurst: ['#ffffff', '#dcc4ff', '#9b5cff', '#5b21b6'],
+  powers: { speed: '#ffe45c', freeze: '#c8f6ff', slow: '#ffc46b', shield: '#59f0ff', cut: '#d6ff6b', life: '#bdf3ff' },
 };
 
 /** Grid dimensions (including the 1-cell outer wall) for a given pixel box. */

@@ -33,10 +33,21 @@
   pointer-events: none;
 }
 
+/* Three columns: the level label stays centred while both sides fit, slides aside when one grows (extra lives,
+   power chips), and gives way altogether before the pause button could be pushed off screen. */
 .hud-top {
   top: var(--safe-top);
   height: 56px;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr minmax(0, auto) 1fr;
+  gap: 10px;
+}
+
+.hud-end {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 8px;
 }
 
 .hud-bottom {
@@ -48,6 +59,7 @@
 .lives {
   display: flex;
   align-items: center;
+  justify-self: start;
   gap: 5px;
   min-width: 44px;
 }
@@ -69,13 +81,33 @@
   filter: grayscale(1);
 }
 
+/* Phones held upright: five lives, the level and a few power chips must share 320–420px. A crowded bar drops the
+   "Level" word and keeps the number. */
+@media (max-width: 420px) {
+  .lives {
+    gap: 3px;
+  }
+
+  .life {
+    width: 19px;
+    height: 19px;
+  }
+
+  .hud-top:has(.life:nth-child(4):not([hidden]), .power:nth-child(2)) .hud-level .micro {
+    display: none;
+  }
+}
+
 .hud-level {
-  position: absolute;
-  left: 50%;
   display: flex;
   align-items: baseline;
+  justify-content: center;
   gap: 0.6em;
-  transform: translateX(-50%);
+  min-width: 0;
+  /* Clipped only when squeezed to nothing; the padding keeps the value's glow inside the clip. */
+  padding: 12px 4px;
+  overflow: hidden;
+  white-space: nowrap;
   transition: opacity 0.5s var(--ease-out);
 }
 
@@ -108,6 +140,118 @@
 .game:not([data-state='playing']) #hud-pause {
   opacity: 0;
   visibility: hidden;
+}
+
+/* ── Powers ────────────────────────────────────────────────────────────────── */
+
+/* One chip per running power, in the power's colour (--accent / --accent-glow, set by hud.js). A timed power's ring
+   drains over its whole duration (--duration, already --delay into it) and the chip blinks for its last seconds
+   (from --blink); the armed cut glows steadily instead. Everything holds still while the game does. */
+.powers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.4s var(--ease-out);
+}
+
+/* A finished level's powers no longer count. */
+.game[data-state='won'] .powers,
+.game[data-state='lost'] .powers {
+  opacity: 0;
+}
+
+.power {
+  position: relative;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--accent-glow) 0%, transparent 72%),
+    rgba(4, 10, 22, 0.55);
+  box-shadow: 0 0 14px var(--accent-glow);
+}
+
+.power-body {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.power-body.is-timed {
+  animation: power-blink 0.5s steps(1, end) var(--blink, 0s) infinite;
+}
+
+.power-icon {
+  display: block;
+  width: 17px;
+  height: 17px;
+  filter: drop-shadow(0 0 3px var(--accent-glow));
+}
+
+/* Drawn from twelve o'clock. */
+.power-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 0 3px var(--accent-glow));
+}
+
+.power-track {
+  fill: none;
+  stroke: rgba(165, 228, 255, 0.14);
+  stroke-width: 2;
+}
+
+.power-left {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+}
+
+.is-timed .power-left {
+  animation: power-drain var(--duration, 1s) linear var(--delay, 0s) both;
+}
+
+.is-armed .power-left {
+  animation: power-armed 1.4s ease-in-out infinite;
+}
+
+.game:not([data-state='playing']) .power-body,
+.game:not([data-state='playing']) .power-left {
+  animation-play-state: paused;
+}
+
+@keyframes power-drain {
+  to {
+    stroke-dashoffset: 100;
+  }
+}
+
+@keyframes power-blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes power-armed {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* A countdown is information, not decoration: it keeps running when motion is reduced (the blink does not). */
+@media (prefers-reduced-motion: reduce) {
+  .is-timed .power-left {
+    animation-duration: var(--duration, 1s) !important;
+    animation-delay: var(--delay, 0s) !important;
+  }
 }
 
 /* ── Progress ──────────────────────────────────────────────────────────────── */
@@ -289,6 +433,10 @@
   animation: intro-number 0.9s var(--ease-spring) 0.05s both;
 }
 
+.overlay-intro.is-open .intro-new {
+  animation-delay: 0.2s;
+}
+
 .overlay-intro.is-open .intro-glyph {
   animation-delay: 0.35s;
 }
@@ -303,6 +451,108 @@
 
 .intro-glyph {
   margin-top: 1.25rem;
+}
+
+/* "New": the enemy or power-up this level brings in, in its own colour (--accent / --accent-glow). */
+.intro-new {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  max-width: min(100%, 23rem);
+  margin-top: 0.5rem;
+  padding: 0.625rem 1.25rem 0.625rem 0.625rem;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(20, 38, 74, 0.72), rgba(6, 12, 26, 0.8));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 18px 50px rgba(0, 0, 0, 0.45);
+  text-align: left;
+}
+
+.intro-new-badge {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--accent-glow);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--accent-glow) 0%, transparent 70%),
+    rgba(3, 9, 20, 0.6);
+  box-shadow: 0 0 22px var(--accent-glow);
+}
+
+/* A ring pings out of the badge while the card waits for the first key. */
+.intro-new-badge::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.overlay-intro.is-open .intro-new-badge::after {
+  animation: new-ping 2.2s var(--ease-out) 0.9s infinite;
+}
+
+.intro-new-icon {
+  display: block;
+  width: 30px;
+  height: 30px;
+  overflow: visible;
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+
+.intro-new-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.intro-new-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+}
+
+.intro-new-tag {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-shadow: 0 0 12px var(--accent-glow);
+}
+
+.intro-new-name {
+  font-size: 1.125rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+
+.intro-new-hint {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  letter-spacing: 0.03em;
+  color: var(--text-dim);
+}
+
+@keyframes new-ping {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
 }
 
 .glyph {
@@ -624,6 +874,21 @@
 
   .intro-glyph {
     margin-top: 0.25rem;
+  }
+
+  .intro-new {
+    margin-top: 0;
+    padding: 0.375rem 1rem 0.375rem 0.375rem;
+  }
+
+  .intro-new-badge {
+    width: 40px;
+    height: 40px;
+  }
+
+  .intro-new-icon {
+    width: 24px;
+    height: 24px;
   }
 }
 

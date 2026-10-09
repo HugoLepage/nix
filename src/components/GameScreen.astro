@@ -7,9 +7,12 @@
       <span class="micro">Level</span>
       <span id="hud-level" class="hud-level-value">01</span>
     </p>
-    <button id="hud-pause" class="icon-btn" type="button" aria-label="Pause">
-      <svg class="icon" aria-hidden="true"><use href="#i-pause" /></svg>
-    </button>
+    <div class="hud-end">
+      <div id="hud-powers" class="powers" role="img" aria-label="Powers" hidden></div>
+      <button id="hud-pause" class="icon-btn" type="button" aria-label="Pause">
+        <svg class="icon" aria-hidden="true"><use href="#i-pause" /></svg>
+      </button>
+    </div>
   </header>
 
   <footer class="hud hud-bottom">
@@ -25,6 +28,19 @@
   <div class="overlay overlay-intro" data-overlay="intro" inert>
     <p class="micro">Level</p>
     <p id="intro-level" class="intro-number">01</p>
+    <!-- What this level brings in, if anything new (overlays.js fills it from the catalog). -->
+    <div id="intro-new" class="intro-new" hidden>
+      <span class="intro-new-badge" aria-hidden="true">
+        <svg class="intro-new-icon"><use href="#i-qix" /></svg>
+      </span>
+      <p class="intro-new-text">
+        <span class="intro-new-title">
+          <span class="intro-new-tag">New</span>
+          <span id="intro-new-name" class="intro-new-name"></span>
+        </span>
+        <span id="intro-new-hint" class="intro-new-hint"></span>
+      </p>
+    </div>
     <div class="intro-glyph" role="img" aria-label="Press any key or tap to start">
       <svg class="glyph glyph-key" viewBox="0 0 48 48" aria-hidden="true">
         <rect class="glyph-key-base" x="8" y="15" width="32" height="26" rx="7" />

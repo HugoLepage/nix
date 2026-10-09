@@ -1,5 +1,6 @@
-/* How to play: six looping mini-diagrams. Each element's resting style is a readable still frame, which is what
-   shows when motion is reduced (the global reduced-motion rule ends every animation immediately). */
+/* How to play: six looping mini-diagrams, then a field guide to the later enemies and the power-ups. Each element's
+   resting style is a readable still frame, which is what shows when motion is reduced (the global reduced-motion
+   rule ends every animation immediately). */
 
 .howto-grid {
   display: grid;
@@ -57,8 +58,9 @@
     gap: 0.75rem;
   }
 
-  /* Four rows of cards share the height left after the header, so short phones never scroll: each drawing gets a
-     quarter of it minus its card's padding and caption, and shrinks inside its card when that is less. */
+  /* The four rows of diagram cards share the height left after the header, so even a short phone shows them all
+     at once (the field guide follows below the fold): each drawing gets a quarter of it minus its card's padding
+     and caption, and shrinks inside its card when that is less. */
   .diagram {
     max-height: calc((100dvh - var(--safe-top) - var(--safe-bottom) - 9.5rem) / 4 - 3.25rem);
   }
@@ -442,29 +444,37 @@
 
 /* ── Qix ───────────────────────────────────────────────────────────────────── */
 
-.d-ribbon {
+/* The orb flies at a constant speed, a touch faster than the arrowhead draws: off the right wall, off the top, then
+   straight into the line. Positions are the orb's centre, one radius (9) inside the field's walls. */
+.d-orb {
+  transform: translate(104px, 42px);
+  filter: drop-shadow(0 0 6px rgba(255, 79, 216, 0.85));
+  animation: d-orb 6s linear infinite;
+}
+
+.d-orb-fade {
+  animation: d-orb-fade 6s linear infinite;
+}
+
+.d-orb-swirl {
   fill: none;
-  stroke: var(--magenta);
-  stroke-width: 1.6;
+  stroke: #fff;
+  stroke-width: 0.8;
   stroke-linecap: round;
-  transform: translate(92px, 50px) rotate(-40deg);
-  filter: drop-shadow(0 0 5px rgba(255, 79, 216, 0.9));
-  animation: d-ribbon 6s ease-in-out infinite;
+  filter: drop-shadow(0 0 1.5px #ffb3f1);
+  animation: d-orb-swirl 2.4s linear infinite;
 }
 
-.d-ribbon path:nth-child(2) {
-  stroke: #e052e6;
-  opacity: 0.8;
+.d-orb-rim {
+  fill: none;
+  stroke: #ffb3f1;
+  stroke-width: 0.9;
+  opacity: 0.85;
 }
 
-.d-ribbon path:nth-child(3) {
-  stroke: #c455f0;
-  opacity: 0.6;
-}
-
-.d-ribbon path:nth-child(4) {
-  stroke: #a855f7;
-  opacity: 0.4;
+.d-orb-glint {
+  fill: #fff;
+  opacity: 0.85;
 }
 
 .d-qix .d-trail {
@@ -472,7 +482,7 @@
 }
 
 .d-qix .d-arrow {
-  transform: translate(56px, 72px) rotate(180deg);
+  transform: translate(56px, 80px) rotate(180deg);
   animation: d-qix-arrow 6s linear infinite;
 }
 
@@ -480,21 +490,47 @@
   animation: d-qix-hit 6s var(--ease-out) infinite;
 }
 
-@keyframes d-ribbon {
-  0% {
-    transform: translate(122px, 72px) rotate(0deg);
+@keyframes d-orb {
+  0%,
+  3.8% {
+    transform: translate(98.2px, 57.3px);
   }
-  40% {
-    transform: translate(98px, 38px) rotate(-130deg);
+  19.8% {
+    transform: translate(131px, 34.3px);
+  }
+  30.4% {
+    transform: translate(109.2px, 19px);
   }
   52% {
-    transform: translate(72px, 52px) rotate(-170deg);
+    transform: translate(65px, 50px);
   }
-  72% {
-    transform: translate(90px, 70px) rotate(-240deg);
-  }
+  64%,
   100% {
-    transform: translate(122px, 72px) rotate(-360deg);
+    transform: translate(40.4px, 67.2px);
+  }
+}
+
+@keyframes d-orb-fade {
+  0%,
+  3.8% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  9%,
+  56% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  64%,
+  100% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes d-orb-swirl {
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -503,19 +539,19 @@
     opacity: 1;
     transform: translate(56px, 10px) rotate(180deg) scale(1);
   }
-  40%,
+  30%,
   52% {
     opacity: 1;
-    transform: translate(56px, 72px) rotate(180deg) scale(1);
+    transform: translate(56px, 80px) rotate(180deg) scale(1);
   }
   55% {
     opacity: 1;
-    transform: translate(56px, 72px) rotate(180deg) scale(1.6);
+    transform: translate(56px, 80px) rotate(180deg) scale(1.6);
   }
   60%,
   88% {
     opacity: 0;
-    transform: translate(56px, 72px) rotate(180deg) scale(0);
+    transform: translate(56px, 80px) rotate(180deg) scale(0);
   }
   88.1% {
     opacity: 0;
@@ -534,7 +570,7 @@
     stroke: #9ff0ff;
     stroke-dashoffset: 100;
   }
-  40%,
+  30%,
   51% {
     opacity: 1;
     stroke: #9ff0ff;
@@ -767,5 +803,73 @@
   100% {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+/* ── Field guide ───────────────────────────────────────────────────────────── */
+
+/* The later enemies and the power-ups, one line each, in the colours they wear on the board (--accent-glow). */
+.guide-list {
+  display: grid;
+  flex: 1;
+  align-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.375rem 0.375rem 0;
+  list-style: none;
+}
+
+.guide-list-split {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.guide-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.guide-icon {
+  display: block;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  overflow: visible;
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+
+.guide-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.guide-name {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+
+.guide-hint {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: var(--text-dim);
+}
+
+/* Narrow cards: one entry per line reads better than two squeezed ones. */
+@media (max-width: 640px) and (orientation: portrait), (max-height: 480px) {
+  .guide-list-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .guide-icon {
+    width: 26px;
+    height: 26px;
   }
 }

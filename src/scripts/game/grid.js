@@ -5,7 +5,8 @@ const NY = [0, 0, 1, -1];
 
 /**
  * The board. Cell (x, y) is a unit square centred on (x, y) in board space.
- * The outer ring starts SOLID; everything the player captures becomes SOLID.
+ * The outer ring starts SOLID; everything the player captures becomes SOLID,
+ * tagged with its capture's region id so a chipper can later shatter it back.
  * The "frontier" is every SOLID cell touching (8-way) a non-SOLID cell: it is
  * the rail the player and the sparx travel on.
  */
@@ -240,6 +241,40 @@ export class Grid {
     };
   }
 
+  /**
+   * Hands every cell of captured region `id` back to the open field (a chipper shattered it).
+   * Returns null when there is no such region (the outer wall, id 0, is never one).
+   */
+  revertRegion(id) {
+    if (!(id > 0)) return null;
+    const { cols, size, cells, region } = this;
+    const fractionBefore = this.fraction;
+    const reverted = [];
+    let sx = 0;
+    let sy = 0;
+    for (let i = 0; i < size; i++) {
+      if (region[i] !== id) continue;
+      const x = i % cols;
+      const y = (i - x) / cols;
+      cells[i] = EMPTY;
+      region[i] = 0;
+      reverted.push({ x, y });
+      sx += x;
+      sy += y;
+    }
+    if (!reverted.length) return null;
+    this.capturedCount -= reverted.length;
+    this.recomputeFrontier();
+    this.version++;
+    return {
+      regionId: id,
+      cells: reverted,
+      centroid: { x: sx / reverted.length, y: sy / reverted.length },
+      fractionBefore,
+      fractionAfter: this.fraction,
+    };
+  }
+
   // ── Queries ──────────────────────────────────────────────────────────────
 
   /** Frontier cell nearest the top (or bottom) edge, then nearest the horizontal centre. */
@@ -327,7 +362,19 @@ export class Grid {
 
   /** Nearest EMPTY cell to (x, y) by 4-way BFS across anything, or null. */
   nearestEmpty(x, y) {
-    const { cols, cells } = this;
+    const { cells } = this;
+    return this._nearest(x, y, (i) => cells[i] === EMPTY);
+  }
+
+  /** Nearest rail cell to (x, y) by 4-way BFS across anything, or null. */
+  nearestFrontier(x, y) {
+    const { frontier } = this;
+    return this._nearest(x, y, (i) => frontier[i] === 1);
+  }
+
+  /** First cell index passing `test`, by 4-way BFS from (x, y) (rounded and clamped onto the board) across anything. */
+  _nearest(x, y, test) {
+    const { cols } = this;
     x = Math.min(cols - 1, Math.max(0, Math.round(x)));
     y = Math.min(this.rows - 1, Math.max(0, Math.round(y)));
     const seen = this._dist.fill(-1);
@@ -340,7 +387,7 @@ export class Grid {
       const i = queue[head++];
       const cx = i % cols;
       const cy = (i - cx) / cols;
-      if (cells[i] === EMPTY) return { x: cx, y: cy };
+      if (test(i)) return { x: cx, y: cy };
       for (let k = 0; k < 4; k++) {
         const nx = cx + NX[k];
         const ny = cy + NY[k];

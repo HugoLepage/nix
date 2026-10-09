@@ -1,6 +1,7 @@
 // Screen switching for `#app[data-screen]`. Every screen stays laid out (the game canvas needs a real box before it
 // is shown); CSS cross-fades on `.is-active`, and `inert` keeps the hidden ones out of tab order and the a11y tree.
 
+import { reveal } from './dom.js';
 import { markSwitch } from './settle.js';
 
 /**
@@ -19,9 +20,11 @@ export function createScreens(app, { autofocus = true } = {}) {
     }
     app.dataset.screen = name;
     markSwitch();
-    const target = autofocus ? screens.get(name).querySelector('[data-autofocus]:not([hidden])') : null;
-    if (target) target.focus({ preventScroll: true });
+    const target = screens.get(name).querySelector('[data-autofocus]:not([hidden])');
+    if (autofocus && target) target.focus({ preventScroll: true });
     else document.activeElement?.blur?.();
+    // Focused or not, the element a screen opens on is brought into view: on a long chapter list, the level to play.
+    if (target) reveal(target, { center: true });
   }
 
   return {

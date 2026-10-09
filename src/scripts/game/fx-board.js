@@ -9,6 +9,7 @@ const SPREAD_PER_STEP = 0.03; // seconds the wave front spends per BFS step …
 const MAX_SPREAD = 0.46; // … capped so POP + spread stays under ~700 ms
 const FLOOD_SPREAD = 0.85;
 const SHINE_LIFE = 0.7;
+const BREAK_LIFE = 0.32; // seconds the ice of a shattered region takes to flicker out
 const SHINE_ANGLE = 0.6; // radians: the sweep travels top-left → bottom-right
 const SHINE_COS = Math.cos(SHINE_ANGLE);
 const SHINE_SIN = Math.sin(SHINE_ANGLE);
@@ -28,8 +29,9 @@ function makeCanvas(w, h) {
 
 /**
  * Everything that is baked rather than redrawn: background, captured "ice",
- * the rail, plus the fill waves that feed cells into the ice layer and the
- * sheen / shine passes that glide over it.
+ * the rail, plus the fill waves that feed cells into the ice layer, the
+ * sheen / shine passes that glide over it, and the cut-out (and fading ghost)
+ * of a region a chipper shattered.
  *
  * Ice and rail live in "board device space": device pixels, origin at the
  * board's top-left, so every cell edge sits on a pixel boundary.
@@ -42,6 +44,7 @@ export class BoardLayers {
     this.view = null;
     this._waves = [];
     this._shines = [];
+    this._breaks = [];
     this._bbox = new Map();
     this._facets = new Map();
     this._tints = new Map();
@@ -56,6 +59,7 @@ export class BoardLayers {
     this._flood = new Uint8Array(grid.size);
     this._waves.length = 0;
     this._shines.length = 0;
+    this._breaks.length = 0;
     this._bbox.clear();
     this._tints.clear();
     this._mask = makeCanvas(grid.cols * MASK_SCALE, grid.rows * MASK_SCALE);
@@ -143,6 +147,49 @@ export class BoardLayers {
     for (let i = 0; i < grid.size; i++) if (cells[i] !== SOLID) this._flood[i] = 1;
   }
 
+  /**
+   * A chipper shattered a region (grid.revertRegion result): its cells are open field again. They are cut out
+   * of the baked ice and the sheen mask, which is exact: every bake paints a region inside its own cells, and
+   * the neighbours already carry their bevel along this border, it being another region's. The region's look
+   * is forgotten, and a ghost of its ice flickers out over BREAK_LIFE while it sparkles apart.
+   */
+  shatter(result) {
+    const { regionId, cells } = result;
+    this._bbox.delete(regionId);
+    this._facets.delete(regionId);
+    this._tints.delete(regionId);
+    const waves = this._waves;
+    for (let w = waves.length - 1; w >= 0; w--) {
+      if (waves[w].region !== regionId) continue;
+      const { xs, ys } = waves[w];
+      for (let k = 0; k < xs.length; k++) this._pending[ys[k] * this.grid.cols + xs[k]] = 0;
+      waves.splice(w, 1);
+    }
+    for (let i = this._shines.length - 1; i >= 0; i--) if (this._shines[i].region === regionId) this._shines.splice(i, 1);
+    if (!cells || !cells.length) return;
+
+    const xs = new Uint16Array(cells.length);
+    const ys = new Uint16Array(cells.length);
+    for (let k = 0; k < cells.length; k++) {
+      xs[k] = cells[k].x;
+      ys[k] = cells[k].y;
+    }
+    if (this._ice) {
+      eraseCells(this._iceCtx, xs, ys, this.view.cellPx);
+      eraseCells(this._maskCtx, xs, ys, MASK_SCALE);
+      this._breaks.push({ xs, ys, t: 0 });
+    }
+    const chance = Math.min(1, (this.lowPower ? 120 : 240) / cells.length);
+    const p = this.effects.particles;
+    for (let k = 0; k < cells.length; k++) {
+      if (Math.random() >= chance) continue;
+      const a = Math.random() * TAU;
+      const v = 1 + Math.random() * 6;
+      const lit = Math.random() < 0.2;
+      p.spawn(xs[k] + Math.random() - 0.5, ys[k] + Math.random() - 0.5, Math.cos(a) * v, Math.sin(a) * v, 0.3 + Math.random() * 0.5, lit ? 0.2 : 0.08 + Math.random() * 0.09, 2.5, 0, this._sparkleRamp, lit);
+    }
+  }
+
   _startWave(region, groups, spread, sparkleChance, forEachCell) {
     const { cols } = this.grid;
     const starts = new Uint32Array(groups + 1);
@@ -202,6 +249,12 @@ export class BoardLayers {
       shines[i].t += dt;
       if (shines[i].t >= SHINE_LIFE) shines.splice(i, 1);
     }
+
+    const breaks = this._breaks;
+    for (let i = breaks.length - 1; i >= 0; i--) {
+      breaks[i].t += dt;
+      if (breaks[i].t >= BREAK_LIFE) breaks.splice(i, 1);
+    }
   }
 
   drawBackground(ctx, time) {
@@ -241,6 +294,7 @@ export class BoardLayers {
     ctx.globalAlpha = 1;
     ctx.drawImage(this._ice, view.offsetX, view.offsetY, bw, bh);
 
+    if (this._breaks.length) this._drawBreaks(ctx);
     if (this._waves.length) this._drawWaves(ctx);
 
     if (!this.lowPower) {
@@ -310,6 +364,29 @@ export class BoardLayers {
     ctx.restore();
   }
 
+  /** The ice of a shattered region, already gone from the bake: it blanches, then fades to the open field. */
+  _drawBreaks(ctx) {
+    const { view } = this;
+    const cp = view.cellPx;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, (view.offsetX + view.shiftX) * view.dpr, (view.offsetY + view.shiftY) * view.dpr);
+    for (const ghost of this._breaks) {
+      const p = ghost.t / BREAK_LIFE;
+      const { xs, ys } = ghost;
+      ctx.beginPath();
+      for (let k = 0; k < xs.length; k++) ctx.rect(xs[k] * cp, ys[k] * cp, cp, cp);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = (1 - p) ** 2;
+      ctx.fillStyle = this._base;
+      ctx.fill();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = 0.7 * (1 - p) ** 3;
+      ctx.fillStyle = WAVE_HEAT;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
   _sparkle(wave, g) {
     const p = this.effects.particles;
     const { xs, ys, starts } = wave;
@@ -339,7 +416,7 @@ export class BoardLayers {
     const to = (x1 + 1) * SHINE_COS + (y1 + 1) * SHINE_SIN;
     // Oldest shine gives way: captures can chain faster than a sweep lasts.
     if (this._shines.length >= 3) this._shines.shift();
-    this._shines.push({ mask: wave.mask, box: [x0, y0, x1, y1], from, to, half: Math.min(9, Math.max(3, (to - from) * 0.16)), t: 0 });
+    this._shines.push({ region: wave.region, mask: wave.mask, box: [x0, y0, x1, y1], from, to, half: Math.min(9, Math.max(3, (to - from) * 0.16)), t: 0 });
   }
 
   /**
@@ -586,6 +663,19 @@ export class BoardLayers {
 
 function groupStart(wave, g) {
   return wave.groups > 1 ? wave.spread * (g / (wave.groups - 1)) ** 1.1 : 0;
+}
+
+/** Clears whole cells out of a board-space layer whose cells are `unit` pixels wide (one path, one fill). */
+function eraseCells(ctx, xs, ys, unit) {
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  for (let i = 0; i < xs.length; i++) ctx.rect(xs[i] * unit, ys[i] * unit, unit, unit);
+  ctx.fill();
+  ctx.restore();
 }
 
 /** Marks cells [from, to) opaque in a low-resolution board alpha map (one rect-only path, one fill). */
