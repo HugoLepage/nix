@@ -40,9 +40,9 @@ export const TUNING = {
   sparxHitDist: 0.75, // cells, centre to centre
   qixHitSlack: 0.45, // qix kills the player when dist < qix.radius + qixHitSlack
   qixSpeed: 18, // cells / s: a touch faster than the player
-  qixRadius: 1.3,
+  qixRadius: 1.0, // cells; the drawn body is the hitbox, and the other foes are sized relative to it
   chipperSpeed: 15,
-  chipperRadius: 1.15,
+  chipperRadius: 0.88,
   chipperHits: 6, // impacts on one captured region before it shatters back to open field
   chipperHitCooldown: 0.25, // s: one bounce is one impact even if it grazes several sub-steps
   seekerCruise: 3, // cells / s while the player is safe on the rail
@@ -50,10 +50,10 @@ export const TUNING = {
   seekerAccel: 9, // cells / s²
   seekerDecel: 6,
   seekerTurn: 2.4, // rad / s steering while locked on
-  seekerRadius: 0.7,
+  seekerRadius: 0.54,
   seekerHitSlack: 0.35,
   spawnerSpeed: 6,
-  spawnerRadius: 2.2,
+  spawnerRadius: 1.7,
   spawnerPorts: 5,
   spawnerFirst: 5, // s before the first launch
   spawnerInterval: 10, // s between launches
