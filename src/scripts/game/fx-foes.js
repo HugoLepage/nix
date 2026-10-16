@@ -1,11 +1,12 @@
 import { COLORS } from '../config.js';
 import { TAU, approach, clamp01, easeOutCubic, glowSprite, hash } from './fx-util.js';
 
-const HISTORY = 6; // after-image samples kept per foe
+const HISTORY = 8; // after-image samples kept per foe
 const HISTORY_STEP = 0.03; // seconds of the foe's own clock between samples
-const GHOST_BACK = [2, 4]; // samples behind the newest, per after-image …
-const GHOST_ALPHA = [0.34, 0.15];
-const GHOST_SCALE = [0.9, 0.74];
+const GHOSTS = HISTORY - 1; // qix after-images: one per sample behind the newest
+const GHOST_ALPHA = 0.3; // the nearest after-image; the rest fade out down the tail
+const GHOST_SWAY = 0.35; // × radius: how far the tail's end swings across the line of flight
+const EMBER_SPACING = 0.4; // cells flown per ember shed off a qix's tail
 const TELEPORT = 3; // cells moved in one frame: a launch or a relocation, never flight
 // Draw order: seekers last, being the smallest and the one that hunts. Spawners above qix, so a fresh
 // qix slides out from under the port that fired it.
@@ -195,6 +196,7 @@ export class Foes {
       state.launch += dt;
       if (foe.kind === 'seeker') this._trackSeeker(foe, state, tick, moved, dt);
       else if (foe.kind === 'spawner') this._trackSpawner(foe, state, tick);
+      else if (foe.kind === 'qix') this._trackQix(foe, state, moved);
       if (this.look.froze) this._frostBurst(foe);
       state.x = foe.x;
       state.y = foe.y;
@@ -243,6 +245,23 @@ export class Foes {
       const a = heading + Math.PI + (Math.random() - 0.5) * 0.6;
       const v = 2 + Math.random() * 6 * boost;
       p.spawn(tx, ty, Math.cos(a) * v, Math.sin(a) * v, 0.22 + Math.random() * 0.3, 0.07 + Math.random() * 0.07, 2.5, 0, this._ramps.seeker, false);
+    }
+  }
+
+  /** Embers shed off the back of the orb, by distance flown: none while it is frozen, fewer while slowed. */
+  _trackQix(foe, state, moved) {
+    if (moved > TELEPORT) return;
+    state.odometer += moved;
+    const spacing = EMBER_SPACING * (this.lowPower ? 2 : 1);
+    if (state.odometer < spacing) return;
+    const back = (foe.heading || 0) + Math.PI;
+    const r = foe.radius || 1;
+    const p = this.effects.particles;
+    while (state.odometer >= spacing) {
+      state.odometer -= spacing;
+      const a = back + (Math.random() - 0.5) * 2.2; // somewhere on the trailing half of the glass
+      const v = 1 + Math.random() * 3;
+      p.spawn(foe.x + Math.cos(a) * r * 0.85, foe.y + Math.sin(a) * r * 0.85, Math.cos(a) * v, Math.sin(a) * v, 0.25 + Math.random() * 0.35, 0.06 + Math.random() * 0.06, 3, 0, this._ramps.qix, false);
     }
   }
 
@@ -319,15 +338,30 @@ export class Foes {
     const r = foe.radius * cs;
     const t = foe.phase || 0;
 
-    // After-images along the path it really flew, bounces included.
+    // After-images along the path it really flew, bounces included. A shimmer runs down them and they sway
+    // across the line of flight, more toward the end, so the tail writhes; all on the foe's clock, so it freezes too.
     ctx.globalCompositeOperation = 'lighter';
     const flat = glowSprite(COLORS.qix, 'flat');
-    for (let k = 0; k < GHOST_BACK.length; k++) {
-      if (GHOST_BACK[k] >= state.count) break;
-      const i = (state.head - 1 - GHOST_BACK[k] + HISTORY * 2) % HISTORY;
-      const g = r * GHOST_SCALE[k];
-      ctx.globalAlpha = GHOST_ALPHA[k];
-      ctx.drawImage(flat, ox + state.hx[i] * cs - g, oy + state.hy[i] * cs - g, g * 2, g * 2);
+    let ax = px; // the after-image ahead of the one being drawn
+    let ay = py;
+    for (let back = 1; back <= GHOSTS && back < state.count; back++) {
+      const i = (state.head - 1 - back + HISTORY * 2) % HISTORY;
+      const f = back / GHOSTS; // 0 at the orb → 1 at the tail's end
+      let gx = ox + state.hx[i] * cs;
+      let gy = oy + state.hy[i] * cs;
+      const dx = ax - gx;
+      const dy = ay - gy;
+      ax = gx;
+      ay = gy;
+      const len = Math.hypot(dx, dy);
+      if (len > 0.5) {
+        const sway = (r * GHOST_SWAY * f * Math.sin(t * 9 - back * 1.2)) / len;
+        gx -= dy * sway;
+        gy += dx * sway;
+      }
+      const g = r * (0.92 - 0.42 * f) * (1 + 0.14 * Math.sin(t * 13 - back * 0.9));
+      ctx.globalAlpha = GHOST_ALPHA * (1 - f + 0.5 / GHOSTS) ** 1.3 * (0.72 + 0.28 * Math.sin(t * 17 - back * 1.4));
+      ctx.drawImage(flat, gx - g, gy - g, g * 2, g * 2);
     }
     const halo = r * 2.5 * (1 + 0.07 * Math.sin(t * 5.3));
     ctx.globalAlpha = 0.42;

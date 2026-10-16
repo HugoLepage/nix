@@ -74,6 +74,7 @@ const MAX_FRAME = 0.1; // seconds; a stalled tab must not fast-forward the anima
 const DEFAULT_INSETS = { top: 56, right: 10, bottom: 46, left: 10 };
 const DEATH_HIT_STOP = 0.09;
 const FOE_HIT_STOP = 0.07;
+const FOE_BLAST_UNIT = 1; // cells of foe radius that get the full-size death blast
 const SHIELD_HIT_STOP = 0.05;
 const SHATTER_HIT_STOP = 0.06;
 const FOUNTAIN_BURSTS = 32;
@@ -241,13 +242,13 @@ export class Renderer {
     });
   }
 
-  /** Any enemy kind. A qix is the reference size; the rest scale by radius (a seeker's pop is half a qix's). */
+  /** Any enemy kind; the blast scales with its radius (FOE_BLAST_UNIT gets the full one). */
   onFoeDestroyed(foe) {
     if (!foe) return;
     const fx = this.effects;
     const look = FOE_LOOKS[foe.kind] || FOE_LOOKS.qix;
     const { x, y } = foe;
-    const scale = Math.max(0.5, Math.min(1.7, (foe.radius || TUNING.qixRadius) / TUNING.qixRadius));
+    const scale = Math.max(0.5, Math.min(1.7, (foe.radius || FOE_BLAST_UNIT) / FOE_BLAST_UNIT));
     const mass = Math.min(1.25, scale); // particle counts: a spawner's bigger cloud must not drain the pool
     this._foes.destroyed(foe);
     fx.hitStop(FOE_HIT_STOP);
