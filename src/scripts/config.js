@@ -40,7 +40,7 @@ export const TUNING = {
   sparxHitDist: 0.75, // cells, centre to centre
   qixHitSlack: 0.45, // qix kills the player when dist < qix.radius + qixHitSlack
   qixSpeed: 18, // cells / s: a touch faster than the player
-  qixRadius: 0.8, // cells; the drawn body is the hitbox
+  qixRadius: 0.5, // cells; the drawn body is the hitbox
   chipperSpeed: 15,
   chipperRadius: 0.88,
   chipperHits: 6, // impacts on one captured region before it shatters back to open field
